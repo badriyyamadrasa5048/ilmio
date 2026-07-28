@@ -64,17 +64,15 @@ app.use((req, res) => {
   res.status(404).render('auth/login', { error: 'Page not found.', success: null });
 });
 
-// Database Synchronization & Server Listening
-sequelize
-  .sync({ force: false }) // preserves existing table schema without constraint conflicts
-  .then(async () => {
-    console.log('Database synchronized.');
-    
-    // Ensure fixed classes 1-12 exist in the database
+// Lazy Database Initialization
+let dbInitialized = false;
+async function initDbOnce() {
+  if (dbInitialized) return;
+  try {
+    await sequelize.sync({ force: false });
     const { Class } = require('./models');
     const classCount = await Class.count();
     if (classCount === 0) {
-      console.log('Creating fixed classes 1-12...');
       const classesData = [];
       for (let i = 1; i <= 12; i++) {
         classesData.push({
@@ -87,19 +85,28 @@ sequelize
         });
       }
       await Class.bulkCreate(classesData);
-      console.log('Fixed classes 1-12 created successfully.');
     }
-
-    // Seed initial database records if empty
     await seedDatabase();
-    
+    dbInitialized = true;
+  } catch (err) {
+    console.error('Database initialization failed:', err);
+  }
+}
+
+// Database Initialization Middleware
+app.use(async (req, res, next) => {
+  await initDbOnce();
+  next();
+});
+
+// Start local server if not on Vercel
+if (!process.env.VERCEL) {
+  initDbOnce().then(() => {
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
     });
-  })
-  .catch((err) => {
-    console.error('Database sync failed:', err);
   });
+}
 
 module.exports = app;
 

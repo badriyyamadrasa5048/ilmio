@@ -1,4 +1,5 @@
 const { Sequelize } = require('sequelize');
+const path = require('path');
 require('dotenv').config();
 
 let sequelize;
@@ -41,9 +42,10 @@ if (process.env.DB_DIALECT === 'postgres') {
   );
 } else {
   // SQLite configuration (default)
+  const sqliteStorage = process.env.DB_STORAGE || (process.env.VERCEL ? '/tmp/database.sqlite' : path.join(__dirname, '../database.sqlite'));
   sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: process.env.DB_STORAGE || './database.sqlite',
+    storage: sqliteStorage,
     logging: false
   });
 }
