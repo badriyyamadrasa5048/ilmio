@@ -1,0 +1,77 @@
+<%
+  const p    = typeof activePage !== 'undefined' ? activePage : '';
+  const role = (typeof user !== 'undefined' && user) ? user.userRole : null;
+%>
+
+<!-- ========== MOBILE BOTTOM NAV ========== -->
+<nav class="bottom-nav d-print-none" id="bottomNav">
+
+  <% if (role === 'admin') { %>
+
+    <a href="/dashboard" class="bottom-nav-item <%= p === 'dashboard' ? 'active' : '' %>">
+      <i class="fa-solid fa-chart-pie"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="/admin/students" class="bottom-nav-item <%= p === 'students' ? 'active' : '' %>">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span>Students</span>
+    </a>
+    <a href="/admin/teachers" class="bottom-nav-item <%= p === 'teachers' ? 'active' : '' %>">
+      <i class="fa-solid fa-chalkboard-user"></i>
+      <span>Teachers</span>
+    </a>
+    <a href="/admin/tasks" class="bottom-nav-item <%= p === 'tasks' ? 'active' : '' %>">
+      <i class="fa-solid fa-list-check"></i>
+      <span>Tasks</span>
+    </a>
+    <a href="/admin/reports/attendance" class="bottom-nav-item <%= p === 'attendance-report' || p === 'marks-report' ? 'active' : '' %>">
+      <i class="fa-solid fa-file-lines"></i>
+      <span>Reports</span>
+    </a>
+
+  <% } else if (role === 'teacher') { %>
+
+    <a href="/dashboard" class="bottom-nav-item <%= p === 'dashboard' ? 'active' : '' %>">
+      <i class="fa-solid fa-chart-pie"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="/teacher/students" class="bottom-nav-item <%= p === 'students' ? 'active' : '' %>">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span>My Students</span>
+    </a>
+    <a href="/teacher/attendance" class="bottom-nav-item <%= p === 'attendance' ? 'active' : '' %>">
+      <i class="fa-solid fa-calendar-check"></i>
+      <span>Mark Attendance</span>
+    </a>
+    <a href="/teacher/marks" class="bottom-nav-item <%= p === 'marks' ? 'active' : '' %>">
+      <i class="fa-solid fa-file-signature"></i>
+      <span>Enter Marks</span>
+    </a>
+    <a href="/teacher/tasks" class="bottom-nav-item <%= p === 'tasks' ? 'active' : '' %>">
+      <i class="fa-solid fa-list-check"></i>
+      <span>Assigned Tasks</span>
+    </a>
+
+  <% } else if (role === 'parent') { %>
+
+    <a href="/dashboard" class="bottom-nav-item <%= p === 'dashboard' ? 'active' : '' %>">
+      <i class="fa-solid fa-house"></i>
+      <span>Home</span>
+    </a>
+    <a href="/parent/attendance" class="bottom-nav-item <%= p === 'parent-attendance' ? 'active' : '' %>">
+      <i class="fa-solid fa-calendar-days"></i>
+      <span>Attendance</span>
+    </a>
+    <a href="/parent/marks" class="bottom-nav-item <%= p === 'parent-marks' ? 'active' : '' %>">
+      <i class="fa-solid fa-award"></i>
+      <span>Marks</span>
+    </a>
+    <a href="/parent/tasks" class="bottom-nav-item <%= p === 'parent-tasks' ? 'active' : '' %>">
+      <i class="fa-solid fa-list-check"></i>
+      <span>Tasks</span>
+    </a>
+
+  <% } %>
+
+</nav>
+<!-- ======================================= -->

@@ -1,0 +1,526 @@
+<%- include('../partials/header') %>
+
+<style>
+  /* Mobile App-like Theme Styles for parent home dashboard */
+  body {
+    background-color: #faf8fd !important;
+  }
+
+  .task-row {
+    background-color: white;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 6px -1px rgba(109, 40, 217, 0.02);
+    border: 1px solid #eef2f6;
+    transition: all 0.2s;
+  }
+  
+  .task-row.task-done {
+    background-color: #f8fafc !important;
+    border-color: rgba(99, 102, 241, 0.15) !important;
+  }
+
+  .task-row.task-done label {
+    color: #64748b !important;
+  }
+
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  .percentage-display-pill {
+    background: #e0f2fe;
+    color: #0369a1;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 4px;
+  }
+
+  /* Slider Modal style */
+  .range-value-display {
+    font-size: 52px;
+    font-weight: 800;
+    color: #3b82f6;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+</style>
+
+<div class="wrapper">
+  <%- include('../partials/sidebar') %>
+
+  <div class="page-right">
+    <%- include('../partials/navbar') %>
+
+    <div class="main-content">
+      <div class="container-fluid" style="max-width: 500px; margin: 0 auto; padding: 0;">
+
+        <!-- Condensed Student Profile Card at Top -->
+        <div class="card border-0 shadow-sm p-3 mb-4 mx-3" style="border-radius: 18px; background: #ffffff;">
+          <div class="d-flex align-items-center gap-3">
+            
+            <!-- Student Photo Avatar (Small 64px) -->
+            <div style="width: 64px; height: 64px; flex-shrink: 0;">
+              <% 
+                const avatarPath = student.gender === 'Female' ? '/images/girl_student.png' : '/images/boy_student.png';
+              %>
+              <img src="<%= avatarPath %>" alt="<%= student.name %>" class="rounded-circle shadow-sm" style="width: 100%; height: 100%; object-fit: cover; border: 2px solid #e2e8f0;">
+            </div>
+            
+            <!-- Student Name, Adm, & Today's Attendance -->
+            <div class="flex-grow-1">
+              <h5 class="fw-bold text-dark mb-0" style="font-size: 16.5px; letter-spacing: -0.3px;"><%= student.name %></h5>
+              <div class="text-secondary small fw-medium mb-2" style="font-size: 12px;">Adm No: <%= student.admissionNumber %></div>
+              
+              <!-- Compact Attendance Badge -->
+              <div>
+                <% if (todayAttendance) { %>
+                  <% if (todayAttendance.status === 'Present') { %>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold" style="font-size: 10.5px;">
+                      <i class="fa-solid fa-circle-check me-1"></i>Present (<%= todayAttendance.checkInTime ? todayAttendance.checkInTime.slice(0, 5) : '' %>)
+                    </span>
+                  <% } else if (todayAttendance.status === 'Late') { %>
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 fw-bold" style="font-size: 10.5px;">
+                      <i class="fa-solid fa-circle-exclamation me-1"></i>Late (<%= todayAttendance.checkInTime ? todayAttendance.checkInTime.slice(0, 5) : '' %>)
+                    </span>
+                  <% } else { %>
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fw-bold" style="font-size: 10.5px;">
+                      <i class="fa-solid fa-circle-xmark me-1"></i>Absent
+                    </span>
+                  <% } %>
+                <% } else { %>
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 fw-bold" style="font-size: 10.5px;">
+                    <i class="fa-regular fa-clock me-1"></i>Not Marked
+                  </span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Routines & Tasks Section at Bottom -->
+        <div class="px-3">
+          
+          <!-- 1. Daily Routine Section -->
+          <div class="panel mb-4">
+            <div class="panel-header d-flex justify-content-between align-items-center" style="background:#fffbeb; border-bottom: 1.5px solid #fef3c7;">
+              <h2 class="panel-title" style="color:#d97706; font-size:15px; font-weight:700;">
+                <span class="panel-title-icon" style="background:#fef3c7; color:#d97706;">
+                  <i class="fa-solid fa-calendar-day"></i>
+                </span>
+                Daily Routines
+              </h2>
+              <span class="badge rounded-pill bg-warning text-dark px-3 py-1 fw-bold" style="font-size: 10px;">Resets Daily</span>
+            </div>
+            <div class="panel-body">
+              <% 
+                const dailyTasks = tasks.filter(t => t.type === 'daily');
+                const parentDaily = dailyTasks.filter(t => t.targetRole === 'parent');
+                const teacherDaily = dailyTasks.filter(t => t.targetRole === 'teacher');
+              %>
+
+              <% if (dailyTasks.length === 0) { %>
+                <div class="text-muted text-center py-4">
+                  <i class="fa-solid fa-clipboard-check fa-2x mb-2 text-light"></i>
+                  <p class="mb-0 small">No daily routines defined.</p>
+                </div>
+              <% } else { %>
+                
+                <% if (parentDaily.length > 0) { %>
+                  <div class="text-secondary fw-bold mb-2 text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">
+                    Home Routines (For Parents)
+                  </div>
+                  <div class="list-group gap-1 mb-3">
+                    <% parentDaily.forEach(task => { %>
+                      <% 
+                        const record = completionMap[task.id] || {};
+                        const isDone = record.completed || false;
+                        const percentVal = record.percentage;
+                      %>
+                      <div class="task-row <%= isDone ? 'task-done' : '' %>" data-task-id="<%= task.id %>" id="row_<%= task.id %>">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div class="d-flex align-items-center gap-3">
+                            <div class="task-toggle-btn cursor-pointer" id="toggle_<%= task.id %>" data-task-id="<%= task.id %>" data-task-title="<%= task.title %>" data-requires-percentage="<%= task.requiresPercentage %>" data-percentage="<%= percentVal || '' %>" data-completed="<%= isDone %>" style="transition: transform 0.15s ease;">
+                              <% if (isDone) { %>
+                                <i class="fa-solid fa-circle-check fs-2 text-success"></i>
+                              <% } else { %>
+                                <i class="fa-regular fa-circle-check fs-2 text-secondary" style="opacity: 0.5;"></i>
+                              <% } %>
+                            </div>
+                            <div>
+                              <label class="fw-bold text-dark m-0" style="font-size:14px;"><%= task.title %></label>
+                              <% if (task.description) { %>
+                                <div class="small text-secondary mt-1" style="font-size:12px;"><%= task.description %></div>
+                              <% } %>
+                              <div class="status-badge-container mt-1">
+                                <% if (task.requiresPercentage && percentVal !== null) { %>
+                                  <span class="percentage-display-pill" id="score_<%= task.id %>">Score: <%= percentVal %>%</span>
+                                <% } %>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    <% }) %>
+                  </div>
+                <% } %>
+
+                <% if (teacherDaily.length > 0) { %>
+                  <div class="text-secondary fw-bold mb-2 text-uppercase <%= parentDaily.length > 0 ? 'mt-3' : '' %>" style="font-size: 10px; letter-spacing: 0.5px;">
+                    Madrasa Routines (For Teachers)
+                  </div>
+                  <div class="list-group gap-1">
+                    <% teacherDaily.forEach(task => { %>
+                      <% 
+                        const record = completionMap[task.id] || {};
+                        const isDone = record.completed || false;
+                        const percentVal = record.percentage;
+                      %>
+                      <div class="task-row <%= isDone ? 'task-done' : '' %>" data-task-id="<%= task.id %>" id="row_<%= task.id %>">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div class="d-flex align-items-center gap-3">
+                            <div style="cursor: default;" title="Marked by Teacher">
+                              <% if (isDone) { %>
+                                <i class="fa-solid fa-circle-check fs-2 text-success" style="opacity: 0.7;"></i>
+                              <% } else { %>
+                                <i class="fa-regular fa-circle-check fs-2 text-secondary" style="opacity: 0.3;"></i>
+                              <% } %>
+                            </div>
+                            <div>
+                              <label class="fw-bold text-dark m-0" style="font-size:14px;">
+                                <%= task.title %>
+                                <span class="badge bg-light text-secondary border border-secondary-subtle ms-2" style="font-size: 9px; font-weight: normal;">Teacher Marked</span>
+                              </label>
+                              <% if (task.description) { %>
+                                <div class="small text-secondary mt-1" style="font-size:12px;"><%= task.description %></div>
+                              <% } %>
+                              <div class="status-badge-container mt-1">
+                                <% if (task.requiresPercentage && percentVal !== null) { %>
+                                  <span class="percentage-display-pill" id="score_<%= task.id %>">Score: <%= percentVal %>%</span>
+                                <% } %>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    <% }) %>
+                  </div>
+                <% } %>
+
+              <% } %>
+            </div>
+          </div>
+
+          <!-- 2. Permanent Tasks Section -->
+          <div class="panel mb-4">
+            <div class="panel-header d-flex justify-content-between align-items-center" style="background:#e0e7ff; border-bottom: 1.5px solid #c7d2fe;">
+              <h2 class="panel-title" style="color:#4f46e5; font-size:15px; font-weight:700;">
+                <span class="panel-title-icon" style="background:#c7d2fe; color:#4f46e5;">
+                  <i class="fa-solid fa-list-check"></i>
+                </span>
+                Permanent Tasks
+              </h2>
+              <span class="badge rounded-pill bg-indigo text-white px-3 py-1 fw-bold" style="font-size: 10px; background:#4f46e5 !important;">Active</span>
+            </div>
+            <div class="panel-body">
+              <% 
+                const permanentTasks = tasks.filter(t => t.type === 'permanent');
+                const parentPermanent = permanentTasks.filter(t => t.targetRole === 'parent');
+                const teacherPermanent = permanentTasks.filter(t => t.targetRole === 'teacher');
+              %>
+
+              <% if (permanentTasks.length === 0) { %>
+                <div class="text-muted text-center py-4">
+                  <i class="fa-solid fa-clipboard-check fa-2x mb-2 text-light"></i>
+                  <p class="mb-0 small">No permanent tasks defined.</p>
+                </div>
+              <% } else { %>
+                
+                <% if (parentPermanent.length > 0) { %>
+                  <div class="text-secondary fw-bold mb-2 text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">
+                    Home Tasks (For Parents)
+                  </div>
+                  <div class="list-group gap-1 mb-3">
+                    <% parentPermanent.forEach(task => { %>
+                      <% 
+                        const record = completionMap[task.id] || {};
+                        const isDone = record.completed || false;
+                        const percentVal = record.percentage;
+                      %>
+                      <div class="task-row <%= isDone ? 'task-done' : '' %>" data-task-id="<%= task.id %>" id="row_<%= task.id %>">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div class="d-flex align-items-center gap-3">
+                            <div class="task-toggle-btn cursor-pointer" id="toggle_<%= task.id %>" data-task-id="<%= task.id %>" data-task-title="<%= task.title %>" data-requires-percentage="<%= task.requiresPercentage %>" data-percentage="<%= percentVal || '' %>" data-completed="<%= isDone %>" style="transition: transform 0.15s ease;">
+                              <% if (isDone) { %>
+                                <i class="fa-solid fa-circle-check fs-2 text-success"></i>
+                              <% } else { %>
+                                <i class="fa-regular fa-circle-check fs-2 text-secondary" style="opacity: 0.5;"></i>
+                              <% } %>
+                            </div>
+                            <div>
+                              <label class="fw-bold text-dark m-0" style="font-size:14px;"><%= task.title %></label>
+                              <% if (task.description) { %>
+                                <div class="small text-secondary mt-1" style="font-size:12px;"><%= task.description %></div>
+                              <% } %>
+                              <div class="status-badge-container mt-1">
+                                <% if (task.requiresPercentage && percentVal !== null) { %>
+                                  <span class="percentage-display-pill" id="score_<%= task.id %>">Score: <%= percentVal %>%</span>
+                                <% } %>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    <% }) %>
+                  </div>
+                <% } %>
+
+                <% if (teacherPermanent.length > 0) { %>
+                  <div class="text-secondary fw-bold mb-2 text-uppercase <%= parentPermanent.length > 0 ? 'mt-3' : '' %>" style="font-size: 10px; letter-spacing: 0.5px;">
+                    Madrasa Tasks (For Teachers)
+                  </div>
+                  <div class="list-group gap-1">
+                    <% teacherPermanent.forEach(task => { %>
+                      <% 
+                        const record = completionMap[task.id] || {};
+                        const isDone = record.completed || false;
+                        const percentVal = record.percentage;
+                      %>
+                      <div class="task-row <%= isDone ? 'task-done' : '' %>" data-task-id="<%= task.id %>" id="row_<%= task.id %>">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div class="d-flex align-items-center gap-3">
+                            <div style="cursor: default;" title="Marked by Teacher">
+                              <% if (isDone) { %>
+                                <i class="fa-solid fa-circle-check fs-2 text-success" style="opacity: 0.7;"></i>
+                              <% } else { %>
+                                <i class="fa-regular fa-circle-check fs-2 text-secondary" style="opacity: 0.3;"></i>
+                              <% } %>
+                            </div>
+                            <div>
+                              <label class="fw-bold text-dark m-0" style="font-size:14px;">
+                                <%= task.title %>
+                                <span class="badge bg-light text-secondary border border-secondary-subtle ms-2" style="font-size: 9px; font-weight: normal;">Teacher Marked</span>
+                              </label>
+                              <% if (task.description) { %>
+                                <div class="small text-secondary mt-1" style="font-size:12px;"><%= task.description %></div>
+                              <% } %>
+                              <div class="status-badge-container mt-1">
+                                <% if (task.requiresPercentage && percentVal !== null) { %>
+                                  <span class="percentage-display-pill" id="score_<%= task.id %>">Score: <%= percentVal %>%</span>
+                                <% } %>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    <% }) %>
+                  </div>
+                <% } %>
+
+              <% } %>
+            </div>
+          </div>
+
+        </div>
+
+      </div><!-- /.container-fluid -->
+    </div><!-- /.main-content -->
+  </div><!-- /.page-right -->
+</div><!-- /.wrapper -->
+
+<!-- Percentage slider modal -->
+<div class="modal fade" id="enterMarksModal" tabindex="-1" aria-labelledby="enterMarksModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content" style="border-radius: 20px;">
+      <div class="modal-body p-4 text-center">
+        <h5 class="fw-bold mb-3" id="marksModalTitle">Enter score</h5>
+        
+        <div class="range-value-display" id="rangeValueDisplay">50%</div>
+
+        <div class="mb-4 px-2">
+          <input type="range" class="form-range" id="percentageSlider" min="0" max="100" value="50" style="height: 6px;">
+          <div class="d-flex justify-content-between text-muted small mt-2">
+            <span>0%</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-light w-50 fw-bold" id="cancelPercentageBtn" style="border-radius: 12px; padding:10px;">Cancel</button>
+          <button type="button" class="btn btn-primary w-50 fw-bold" id="savePercentageBtn" style="border-radius: 12px; padding:10px; background:#3b82f6; border:none;">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Premium Toast Status Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1300;">
+  <div id="statusToast" class="toast align-items-center border-0 shadow-lg text-white" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius:12px; background:#1e1b4b;">
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-center gap-2">
+        <i class="fa-solid fa-circle-check text-success fs-5 toast-icon"></i>
+        <span class="toast-text fw-semibold" style="font-size:13px;">Task status saved!</span>
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const toastEl = document.getElementById('statusToast');
+    const toastInstance = new bootstrap.Toast(toastEl, { delay: 2500 });
+    const toastText = toastEl.querySelector('.toast-text');
+    const toastIcon = toastEl.querySelector('.toast-icon');
+
+    function showStatusToast(message, isSuccess = true) {
+      toastText.textContent = message;
+      if (isSuccess) {
+        toastIcon.className = "fa-solid fa-circle-check text-success fs-5 toast-icon";
+      } else {
+        toastIcon.className = "fa-solid fa-circle-exclamation text-danger fs-5 toast-icon";
+      }
+      toastInstance.show();
+    }
+
+    const marksModal = new bootstrap.Modal(document.getElementById('enterMarksModal'));
+    const slider = document.getElementById('percentageSlider');
+    const valueDisplay = document.getElementById('rangeValueDisplay');
+    const marksModalTitle = document.getElementById('marksModalTitle');
+    let activeCheckboxForSlider = null;
+
+    slider.addEventListener('input', function() {
+      valueDisplay.textContent = `${this.value}%`;
+    });
+
+    document.querySelectorAll('.task-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', async function () {
+        const taskId = this.getAttribute('data-task-id');
+        const taskTitle = this.getAttribute('data-task-title');
+        const isCompleted = this.getAttribute('data-completed') === 'true';
+        const requiresPercentage = this.getAttribute('data-requires-percentage') === 'true';
+        const currentPercentage = this.getAttribute('data-percentage');
+        const taskRow = document.getElementById(`row_${taskId}`);
+
+        const nextCompletedState = !isCompleted;
+
+        if (nextCompletedState && requiresPercentage) {
+          // Open percentage modal
+          activeCheckboxForSlider = this;
+          marksModalTitle.textContent = taskTitle;
+          slider.value = currentPercentage ? parseInt(currentPercentage) : 50;
+          valueDisplay.textContent = `${slider.value}%`;
+          marksModal.show();
+        } else {
+          // Simple toggle (checkmark)
+          if (nextCompletedState) {
+            taskRow.classList.add('task-done');
+            this.innerHTML = '<i class="fa-solid fa-circle-check fs-2 text-success"></i>';
+            this.setAttribute('data-completed', 'true');
+          } else {
+            taskRow.classList.remove('task-done');
+            this.innerHTML = '<i class="fa-regular fa-circle-check fs-2 text-secondary" style="opacity: 0.5;"></i>';
+            this.setAttribute('data-completed', 'false');
+            this.setAttribute('data-percentage', '');
+            const scoreContainer = taskRow.querySelector('.status-badge-container');
+            if (scoreContainer) scoreContainer.innerHTML = '';
+          }
+
+          // Visual pop scale animation
+          this.style.transform = 'scale(1.2)';
+          setTimeout(() => { this.style.transform = 'scale(1)'; }, 150);
+
+          try {
+            const res = await fetch('/parent/tasks/toggle', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ taskId, completed: nextCompletedState.toString() })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+              showStatusToast(nextCompletedState ? "Task completed!" : "Task reset.");
+            } else {
+              throw new Error("Failed to save");
+            }
+          } catch (error) {
+            console.error(error);
+            showStatusToast("Failed to save changes. Please try again.", false);
+            
+            // Revert state
+            if (nextCompletedState) {
+              taskRow.classList.remove('task-done');
+              this.innerHTML = '<i class="fa-regular fa-circle-check fs-2 text-secondary" style="opacity: 0.5;"></i>';
+              this.setAttribute('data-completed', 'false');
+            } else {
+              taskRow.classList.add('task-done');
+              this.innerHTML = '<i class="fa-solid fa-circle-check fs-2 text-success"></i>';
+              this.setAttribute('data-completed', 'true');
+            }
+          }
+        }
+      });
+    });
+
+    // Save percentage slider value
+    document.getElementById('savePercentageBtn').addEventListener('click', async function() {
+      if (!activeCheckboxForSlider) return;
+
+      const taskId = activeCheckboxForSlider.getAttribute('data-task-id');
+      const score = slider.value;
+      const taskRow = document.getElementById(`row_${taskId}`);
+
+      try {
+        const res = await fetch('/parent/tasks/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            taskId,
+            completed: 'true',
+            percentage: score
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          activeCheckboxForSlider.setAttribute('data-completed', 'true');
+          activeCheckboxForSlider.setAttribute('data-percentage', score);
+          
+          const icon = activeCheckboxForSlider.querySelector('i') || activeCheckboxForSlider;
+          activeCheckboxForSlider.innerHTML = '<i class="fa-solid fa-circle-check fs-2 text-success"></i>';
+          taskRow.classList.add('task-done');
+
+          const scoreContainer = taskRow.querySelector('.status-badge-container');
+          scoreContainer.innerHTML = `<span class="percentage-display-pill" id="score_${taskId}">Score: ${score}%</span>`;
+
+          showStatusToast("Task completed with score!");
+        } else {
+          throw new Error("Failed");
+        }
+      } catch (err) {
+        console.error(err);
+        showStatusToast("Failed to save score.", false);
+        
+        activeCheckboxForSlider.setAttribute('data-completed', 'false');
+        activeCheckboxForSlider.innerHTML = '<i class="fa-regular fa-circle-check fs-2 text-secondary" style="opacity: 0.5;"></i>';
+        taskRow.classList.remove('task-done');
+      }
+
+      marksModal.hide();
+      activeCheckboxForSlider = null;
+    });
+
+    // Cancel modal reverts checkbox to unchecked
+    document.getElementById('cancelPercentageBtn').addEventListener('click', function() {
+      marksModal.hide();
+      activeCheckboxForSlider = null;
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>

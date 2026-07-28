@@ -1,0 +1,154 @@
+<%
+  // Determine active nav item
+  const p = typeof activePage !== 'undefined' ? activePage : '';
+  const role = user.userRole;
+
+  // Avatar initials
+  const initials = user.username ? user.username.slice(0,2).toUpperCase() : 'U';
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+%>
+<nav id="sidebar" class="d-print-none">
+
+  <!-- Brand -->
+  <a href="/dashboard" class="sidebar-brand">
+    <div class="sidebar-brand-icon">
+      <i class="fa-solid fa-mosque"></i>
+    </div>
+    <div class="sidebar-brand-text">
+      <span class="sidebar-brand-title">Ilmio</span>
+      <span class="sidebar-brand-sub">Madrasa Portal</span>
+    </div>
+  </a>
+
+  <!-- Navigation -->
+  <ul class="sidebar-nav">
+
+    <!-- Dashboard — all roles -->
+    <li class="nav-item <%= p === 'dashboard' ? 'active' : '' %>">
+      <a href="/dashboard" class="nav-link">
+        <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
+        Dashboard
+      </a>
+    </li>
+
+    <% if (role === 'admin') { %>
+
+      <li class="nav-item <%= p === 'students' ? 'active' : '' %>">
+        <a href="/admin/students" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+          Students
+        </a>
+      </li>
+
+      <li class="nav-item <%= p === 'teachers' ? 'active' : '' %>">
+        <a href="/admin/teachers" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-chalkboard-user"></i></span>
+          Teachers
+        </a>
+      </li>
+
+      <li class="nav-item <%= p === 'classes' ? 'active' : '' %>">
+        <a href="/admin/classes" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-school"></i></span>
+          Classes
+        </a>
+      </li>
+
+      <li class="nav-item <%= p === 'tasks' ? 'active' : '' %>">
+        <a href="/admin/tasks" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+          Tasks List
+        </a>
+      </li>
+
+
+      <li class="nav-item <%= p === 'attendance-report' ? 'active' : '' %>">
+        <a href="/admin/reports/attendance" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-clipboard-user"></i></span>
+          Attendance Report
+        </a>
+      </li>
+
+      <li class="nav-item <%= p === 'marks-report' ? 'active' : '' %>">
+        <a href="/admin/reports/marks" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-square-poll-vertical"></i></span>
+          Marks Report
+        </a>
+      </li>
+
+    <% } else if (role === 'teacher') { %>
+
+      <li class="nav-item <%= p === 'my-students' ? 'active' : '' %>">
+        <a href="/teacher/students" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+          My Students
+        </a>
+      </li>
+
+      <li class="nav-item <%= p === 'attendance' ? 'active' : '' %>">
+        <a href="/teacher/attendance" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span>
+          Mark Attendance
+        </a>
+      </li>
+
+      <li class="nav-item <%= p === 'marks' ? 'active' : '' %>">
+        <a href="/teacher/marks" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-file-signature"></i></span>
+          Enter Marks
+        </a>
+      </li>
+
+      <li class="nav-item <%= p === 'tasks' ? 'active' : '' %>">
+        <a href="/teacher/tasks" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+          Assigned Tasks
+        </a>
+      </li>
+
+    <% } else if (role === 'parent') { %>
+
+      <li class="nav-item <%= p === 'profile' ? 'active' : '' %>">
+        <a href="/parent/profile" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-id-card"></i></span>
+          Student Profile
+        </a>
+      </li>
+
+      <li class="nav-item <%= p === 'parent-attendance' ? 'active' : '' %>">
+        <a href="/parent/attendance" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-calendar-days"></i></span>
+          View Attendance
+        </a>
+      </li>
+
+      <li class="nav-item <%= p === 'parent-marks' ? 'active' : '' %>">
+        <a href="/parent/marks" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-award"></i></span>
+          View Marks
+        </a>
+      </li>
+
+      <li class="nav-item <%= p === 'parent-tasks' ? 'active' : '' %>">
+        <a href="/parent/tasks" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+          Daily Routine & Tasks
+        </a>
+      </li>
+    <% } %>
+
+  </ul>
+
+  <!-- Footer: User info + logout -->
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-avatar"><%= initials %></div>
+    <div class="sidebar-footer-info">
+      <div class="sidebar-footer-name"><%= user.username %></div>
+      <div class="sidebar-footer-role"><%= roleLabel %></div>
+    </div>
+    <a href="/auth/logout" class="sidebar-logout" title="Logout">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i>
+    </a>
+  </div>
+
+</nav>

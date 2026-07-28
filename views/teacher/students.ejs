@@ -1,0 +1,73 @@
+<%- include('../partials/header') %>
+
+<div class="wrapper">
+  <%- include('../partials/sidebar') %>
+
+  <div class="page-right">
+    <%- include('../partials/navbar') %>
+
+    <div class="main-content">
+      <div class="container-fluid">
+
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="fw-bold text-dark mb-1">My Students</h2>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+              <li class="breadcrumb-item active" aria-current="page">My Students</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Students Table -->
+      <div class="card border-0 shadow-sm bg-white p-4">
+        <% if (students.length === 0) { %>
+          <div class="text-muted text-center py-5">
+            <i class="fa-solid fa-users-slash fa-3x mb-3 text-light"></i>
+            <p class="mb-0">No students are currently enrolled in your classes.</p>
+          </div>
+        <% } else { %>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Adm. No</th>
+                  <th>Student Name</th>
+                  <th>Class / Section</th>
+                  <th>Gender</th>
+                  <th>Parent / Guardian Contact</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% students.forEach(student => { %>
+                  <tr>
+                    <td><span class="fw-bold text-dark"><%= student.admissionNumber %></span></td>
+                    <td><%= student.name %></td>
+                    <td>
+                      <span class="badge bg-light text-dark fw-semibold">
+                        <%= student.class ? student.class.name : 'Unassigned' %>
+                      </span>
+                    </td>
+                    <td><%= student.gender %></td>
+                    <td>
+                      <div class="small">
+                        <strong><%= student.parentName %></strong><br>
+                        <span class="text-secondary"><%= student.parentPhone %> | <%= student.parentEmail %></span>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,198 @@
+<%- include('../partials/header') %>
+
+<div class="wrapper">
+  <%- include('../partials/sidebar') %>
+
+  <div class="page-right">
+    <%- include('../partials/navbar') %>
+
+    <div class="main-content">
+      <div class="container-fluid">
+
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="fw-bold text-dark mb-1">Class Management</h2>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Classes</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Classes Grid -->
+      <div class="card border-0 shadow-sm bg-white p-4">
+        <% if (classes.length === 0) { %>
+          <div class="text-muted text-center py-5">
+            <i class="fa-solid fa-school-flag fa-3x mb-3 text-light"></i>
+            <p class="mb-0">No classes created yet. Click "Create Class" to get started.</p>
+          </div>
+        <% } else { %>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Class Name</th>
+                  <th>Class Teacher</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% classes.forEach(c => { %>
+                  <tr>
+                    <td><span class="fw-bold text-dark"><%= c.name %></span></td>
+                    <td>
+                      <% if (c.classTeacher) { %>
+                        <div class="fw-semibold text-primary"><%= c.classTeacher.name %></div>
+                      <% } else { %>
+                        <span class="text-muted italic">No Class Teacher Assigned</span>
+                      <% } %>
+                    </td>
+                    <td class="text-end">
+                      <button type="button" class="btn btn-sm btn-outline-primary me-2 edit-class-btn"
+                              data-class='<%= JSON.stringify(c) %>'
+                              data-bs-toggle="modal" data-bs-target="#editClassModal">
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     ADD CLASS MODAL
+     ========================================== -->
+<div class="modal fade" id="addClassModal" tabindex="-1" aria-labelledby="addClassModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title fw-bold" id="addClassModalLabel">Create New Class</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="/admin/classes/create" method="POST">
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Class Name</label>
+              <input type="text" name="name" class="form-control" placeholder="E.g. Class 1, Quran Hifz" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Room Number</label>
+              <input type="text" name="roomNumber" class="form-control" placeholder="E.g. Room 102, Hall A">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Assign Class Teacher</label>
+              <select name="teacherId" class="form-select">
+                <option value="">No Teacher Assigned</option>
+                <% teachers.forEach(t => { %>
+                  <option value="<%= t.id %>"><%= t.name %> (<%= t.subject %>)</option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Start Time</label>
+              <input type="time" name="startTime" class="form-control" value="08:30" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">End Time</label>
+              <input type="time" name="endTime" class="form-control" value="09:30" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Grace Time (Mins)</label>
+              <input type="number" name="graceTime" class="form-control" min="0" max="60" value="10" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-warning fw-bold text-dark">Save Class</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     EDIT CLASS MODAL
+     ========================================== -->
+<div class="modal fade" id="editClassModal" tabindex="-1" aria-labelledby="editClassModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title fw-bold" id="editClassModalLabel">Edit Class Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editClassForm" action="/admin/classes/update" method="POST">
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Class Name</label>
+              <input type="text" id="edit_name" name="name" class="form-control" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Assign Class Teacher</label>
+              <select id="edit_teacherId" name="teacherId" class="form-select">
+                <option value="">No Teacher Assigned</option>
+                <% teachers.forEach(t => { %>
+                  <option value="<%= t.id %>"><%= t.name %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Start Time</label>
+              <input type="time" id="edit_startTime" name="startTime" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">End Time</label>
+              <input type="time" id="edit_endTime" name="endTime" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Grace Time (Mins)</label>
+              <input type="number" id="edit_graceTime" name="graceTime" class="form-control" min="0" max="60" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-warning fw-bold text-dark">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const editButtons = document.querySelectorAll(".edit-class-btn");
+    const editForm = document.getElementById("editClassForm");
+
+    editButtons.forEach(btn => {
+      btn.addEventListener("click", function() {
+        const classObj = JSON.parse(this.getAttribute("data-class"));
+        
+        document.getElementById("edit_name").value = classObj.name;
+        document.getElementById("edit_teacherId").value = classObj.teacherId || '';
+        
+        // Strip seconds if present in database time strings (e.g. 08:30:00 -> 08:30)
+        const formatTime = (t) => t ? t.slice(0, 5) : '';
+        document.getElementById("edit_startTime").value = formatTime(classObj.startTime);
+        document.getElementById("edit_endTime").value = formatTime(classObj.endTime);
+        document.getElementById("edit_graceTime").value = classObj.graceTime || 10;
+
+        editForm.action = `/admin/classes/update/${classObj.id}`;
+      });
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>

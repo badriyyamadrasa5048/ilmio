@@ -1,0 +1,29 @@
+<%
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+%>
+<div class="top-navbar d-print-none">
+  <div class="d-flex align-items-center gap-3">
+    <!-- Sidebar Toggle -->
+    <button id="sidebarCollapse" class="navbar-btn border-0" title="Toggle Sidebar">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <!-- In-page Search -->
+    <div class="search-box d-none d-md-flex">
+      <i class="fa-solid fa-magnifying-glass search-ico"></i>
+      <input type="text" placeholder="Search…" id="globalSearch" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="navbar-actions">
+    <span class="d-none d-lg-flex align-items-center gap-2 me-2" style="font-size:13px;color:var(--text-muted);font-weight:500;">
+      <i class="fa-regular fa-calendar"></i>
+      <%= today %>
+    </span>
+    <a href="#" class="navbar-btn" title="Notifications">
+      <i class="fa-regular fa-bell"></i>
+    </a>
+    <a href="/auth/logout" class="navbar-btn" title="Logout">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i>
+    </a>
+  </div>
+</div>

@@ -1,0 +1,147 @@
+<%- include('../partials/header') %>
+
+<div class="wrapper">
+  <%- include('../partials/sidebar') %>
+
+  <div class="page-right">
+    <%- include('../partials/navbar') %>
+
+    <div class="main-content">
+      <div class="container-fluid">
+
+      <!-- Printable Report Header -->
+      <div class="print-header">
+        <h2>Al-Ilm Madrasa</h2>
+        <p>Student Attendance Report</p>
+        <p class="small text-secondary">
+          Generated on: <%= new Date().toLocaleDateString() %> 
+          <% if (filters.startDate || filters.endDate) { %>
+            | Period: <%= filters.startDate || 'Beginning' %> to <%= filters.endDate || 'Present' %>
+          <% } %>
+        </p>
+      </div>
+
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4 d-print-none">
+        <div>
+          <h2 class="fw-bold text-dark mb-1">Attendance Report</h2>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Attendance Report</li>
+            </ol>
+          </nav>
+        </div>
+        <button type="button" class="btn btn-warning py-2 px-4 fw-bold hover-lift" onclick="window.print();">
+          <i class="fa-solid fa-print me-2"></i>Print Report
+        </button>
+      </div>
+
+      <!-- Filters Section -->
+      <div class="card border-0 shadow-sm bg-white p-4 mb-4 d-print-none">
+        <form action="/admin/reports/attendance" method="GET" class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label text-secondary fw-semibold">Class Filter</label>
+            <select name="classId" class="form-select">
+              <option value="">All Classes</option>
+              <% classes.forEach(c => { %>
+                <option value="<%= c.id %>" <%= filters.classId == c.id ? 'selected' : '' %>><%= c.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-secondary fw-semibold">Start Date</label>
+            <input type="date" name="startDate" class="form-control" value="<%= filters.startDate %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-secondary fw-semibold">End Date</label>
+            <input type="date" name="endDate" class="form-control" value="<%= filters.endDate %>">
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-dark w-100 py-2">
+              <i class="fa-solid fa-arrows-spin me-2"></i>Generate
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Analytics Cards -->
+      <div class="row g-4 mb-4">
+        <!-- Attendance Rate -->
+        <div class="col-sm-6 col-md-3">
+          <div class="card border-0 shadow-sm bg-white p-3 h-100">
+            <h6 class="text-muted mb-2 text-uppercase fw-bold small">Attendance Rate</h6>
+            <h3 class="fw-bold mb-0 text-success"><%= stats.attendanceRate %>%</h3>
+          </div>
+        </div>
+        <!-- Total Checks -->
+        <div class="col-sm-6 col-md-3">
+          <div class="card border-0 shadow-sm bg-white p-3 h-100">
+            <h6 class="text-muted mb-2 text-uppercase fw-bold small">Total Check-ins</h6>
+            <h3 class="fw-bold mb-0 text-primary"><%= stats.totalCount %></h3>
+          </div>
+        </div>
+        <!-- Total Absences -->
+        <div class="col-sm-6 col-md-3">
+          <div class="card border-0 shadow-sm bg-white p-3 h-100">
+            <h6 class="text-muted mb-2 text-uppercase fw-bold small">Total Absences</h6>
+            <h3 class="fw-bold mb-0 text-danger"><%= stats.absentCount %></h3>
+          </div>
+        </div>
+        <!-- Total Lates -->
+        <div class="col-sm-6 col-md-3">
+          <div class="card border-0 shadow-sm bg-white p-3 h-100">
+            <h6 class="text-muted mb-2 text-uppercase fw-bold small">Total Lateness</h6>
+            <h3 class="fw-bold mb-0 text-warning-emphasis"><%= stats.lateCount %></h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Table -->
+      <div class="card border-0 shadow-sm bg-white p-4">
+        <% if (records.length === 0) { %>
+          <div class="text-muted text-center py-5">
+            <i class="fa-solid fa-clipboard-question fa-3x mb-3 text-light"></i>
+            <p class="mb-0">No attendance logs found for the selected criteria.</p>
+          </div>
+        <% } else { %>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Date</th>
+                  <th>Student Name</th>
+                  <th>Class</th>
+                  <th>Status</th>
+                  <th>Remarks/Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% records.forEach(rec => { %>
+                  <tr>
+                    <td><span class="fw-semibold"><%= new Date(rec.date).toLocaleDateString() %></span></td>
+                    <td><span class="fw-bold"><%= rec.student ? rec.student.name : 'N/A' %></span></td>
+                    <td><%= rec.student && rec.student.class ? rec.student.class.name : 'N/A' %></td>
+                    <td>
+                      <% if (rec.status === 'Present') { %>
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2">Present <%= rec.checkInTime ? '(' + rec.checkInTime.slice(0, 5) + ')' : '' %></span>
+                      <% } else if (rec.status === 'Absent') { %>
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2">Absent</span>
+                      <% } else if (rec.status === 'Late') { %>
+                        <span class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25 px-3 py-2">Late <%= rec.checkInTime ? '(' + rec.checkInTime.slice(0, 5) + ')' : '' %></span>
+                      <% } %>
+                    </td>
+                    <td><span class="text-secondary small"><%= rec.notes || '-' %></span></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
