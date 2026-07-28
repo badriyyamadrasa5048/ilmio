@@ -4,9 +4,13 @@ require('dotenv').config();
 
 let sequelize;
 
-if (process.env.DB_DIALECT === 'postgres') {
+// If running on Vercel or DB_DIALECT is postgres, use PostgreSQL / Supabase
+const isPostgres = process.env.DB_DIALECT === 'postgres' || process.env.VERCEL;
+const dbUrl = process.env.DB_URL || 'postgresql://postgres:v4C7JfPYJ0BsQCVC@db.epqvoiasapmelhuhaqhl.supabase.co:5432/postgres';
+
+if (isPostgres && dbUrl) {
   // Supabase PostgreSQL configuration
-  sequelize = new Sequelize(process.env.DB_URL, {
+  sequelize = new Sequelize(dbUrl, {
     dialect: 'postgres',
     logging: false, // Turn off logging for cleaner terminal
     dialectOptions: {
@@ -41,8 +45,8 @@ if (process.env.DB_DIALECT === 'postgres') {
     }
   );
 } else {
-  // SQLite configuration (default)
-  const sqliteStorage = process.env.DB_STORAGE || (process.env.VERCEL ? '/tmp/database.sqlite' : path.join(__dirname, '../database.sqlite'));
+  // SQLite configuration (default for local development)
+  const sqliteStorage = process.env.DB_STORAGE || path.join(__dirname, '../database.sqlite');
   sequelize = new Sequelize({
     dialect: 'sqlite',
     storage: sqliteStorage,
