@@ -4,8 +4,8 @@ require('dotenv').config();
 
 let sequelize;
 
-// If running on Vercel or DB_DIALECT is postgres, use PostgreSQL / Supabase
-const isPostgres = process.env.DB_DIALECT === 'postgres' || process.env.VERCEL;
+// If running on Vercel, Netlify, or DB_DIALECT is postgres, use PostgreSQL / Supabase
+const isPostgres = process.env.DB_DIALECT === 'postgres' || process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME;
 const dbUrl = process.env.DB_URL || 'postgresql://postgres:v4C7JfPYJ0BsQCVC@db.epqvoiasapmelhuhaqhl.supabase.co:5432/postgres';
 
 if (isPostgres && dbUrl) {

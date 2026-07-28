@@ -96,8 +96,8 @@ async function initDbOnce() {
 // Trigger DB init asynchronously
 initDbOnce();
 
-// Start local server if not on Vercel
-if (!process.env.VERCEL) {
+// Start local server if not on Vercel or Netlify
+if (!process.env.VERCEL && !process.env.NETLIFY && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
   });
