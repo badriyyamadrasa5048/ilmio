@@ -64,10 +64,11 @@ app.use((req, res) => {
   res.status(404).render('auth/login', { error: 'Page not found.', success: null });
 });
 
-// Lazy Database Initialization
+// Database Initialization
 let dbInitialized = false;
 async function initDbOnce() {
   if (dbInitialized) return;
+  dbInitialized = true;
   try {
     await sequelize.sync({ force: false });
     const { Class } = require('./models');
@@ -87,24 +88,18 @@ async function initDbOnce() {
       await Class.bulkCreate(classesData);
     }
     await seedDatabase();
-    dbInitialized = true;
   } catch (err) {
     console.error('Database initialization failed:', err);
   }
 }
 
-// Database Initialization Middleware
-app.use(async (req, res, next) => {
-  await initDbOnce();
-  next();
-});
+// Trigger DB init asynchronously
+initDbOnce();
 
 // Start local server if not on Vercel
 if (!process.env.VERCEL) {
-  initDbOnce().then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
-    });
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
   });
 }
 
