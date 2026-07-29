@@ -1,29 +1,31 @@
-const { Attendance, Student } = require('../models');
+const { Attendance, Student, Class } = require('../models');
 
-async function run() {
+async function testSaveAttendance() {
   try {
-    const students = await Student.findAll({ where: { classId: 1 } });
-    console.log(`Found ${students.length} students in Class 1:`);
-    
-    for (const student of students) {
-      console.log(`- ID: ${student.id}, Name: ${student.name}`);
-      try {
-        const att = await Attendance.create({
-          studentId: student.id,
-          date: '2026-06-12',
-          status: 'Present',
-          notes: 'Test'
-        });
-        console.log(`  Successfully inserted attendance for ${student.name}`);
-        // Clean up
-        await att.destroy();
-      } catch (err) {
-        console.error(`  FAILED to insert attendance for ${student.name}:`, err.message);
-      }
+    const student = await Student.findOne();
+    if (!student) {
+      console.log('No student found in DB.');
+      process.exit(0);
     }
+    const today = new Date().toISOString().split('T')[0];
+
+    const [att, created] = await Attendance.findOrCreate({
+      where: { studentId: student.id, date: today },
+      defaults: { status: 'Present', checkInTime: '08:30:00' }
+    });
+
+    if (!created) {
+      att.status = 'Present';
+      att.checkInTime = '08:30:00';
+      await att.save();
+    }
+
+    console.log('Attendance saved successfully:', att.toJSON());
+    process.exit(0);
   } catch (err) {
-    console.error(err);
+    console.error('Error saving attendance:', err);
+    process.exit(1);
   }
 }
 
-run();
+testSaveAttendance();

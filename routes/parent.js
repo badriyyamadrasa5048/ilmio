@@ -43,14 +43,24 @@ router.get('/profile', async (req, res) => {
 // ==========================================
 router.get('/attendance', async (req, res) => {
   const studentId = req.session.referenceId;
+  const { startDate, endDate } = req.query;
   try {
     const student = await Student.findByPk(studentId);
     if (!student) {
       return res.status(404).send('Student not found.');
     }
 
+    let whereClause = { studentId };
+    if (startDate && endDate) {
+      whereClause.date = { [Op.between]: [startDate, endDate] };
+    } else if (startDate) {
+      whereClause.date = { [Op.gte]: startDate };
+    } else if (endDate) {
+      whereClause.date = { [Op.lte]: endDate };
+    }
+
     const attendances = await Attendance.findAll({
-      where: { studentId },
+      where: whereClause,
       order: [['date', 'DESC']]
     });
 
@@ -69,6 +79,8 @@ router.get('/attendance', async (req, res) => {
       activePage: 'parent-attendance',
       student,
       attendances,
+      startDate: startDate || '',
+      endDate: endDate || '',
       stats: {
         totalDays,
         presentDays,
@@ -90,14 +102,24 @@ router.get('/attendance', async (req, res) => {
 // ==========================================
 router.get('/marks', async (req, res) => {
   const studentId = req.session.referenceId;
+  const { startDate, endDate } = req.query;
   try {
     const student = await Student.findByPk(studentId);
     if (!student) {
       return res.status(404).send('Student not found.');
     }
 
+    let whereClause = { studentId };
+    if (startDate && endDate) {
+      whereClause.examDate = { [Op.between]: [startDate, endDate] };
+    } else if (startDate) {
+      whereClause.examDate = { [Op.gte]: startDate };
+    } else if (endDate) {
+      whereClause.examDate = { [Op.lte]: endDate };
+    }
+
     const marks = await Mark.findAll({
-      where: { studentId },
+      where: whereClause,
       order: [['examDate', 'DESC'], ['subjectName', 'ASC']]
     });
 
@@ -114,7 +136,9 @@ router.get('/marks', async (req, res) => {
       user: req.session,
       activePage: 'parent-marks',
       student,
-      groupedMarks
+      groupedMarks,
+      startDate: startDate || '',
+      endDate: endDate || ''
     });
   } catch (error) {
     console.error('Parent view marks error:', error);

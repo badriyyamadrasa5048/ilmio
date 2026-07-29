@@ -46,6 +46,10 @@ const Student = sequelize.define('Student', {
   classId: {
     type: DataTypes.INTEGER,
     allowNull: true
+  },
+  photoUrl: {
+    type: DataTypes.TEXT,
+    allowNull: true
   }
 });
 

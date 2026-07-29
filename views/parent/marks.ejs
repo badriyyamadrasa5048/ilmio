@@ -33,6 +33,20 @@
         </button>
       </div>
 
+      <!-- Date Filter Form -->
+      <div class="card border-0 shadow-sm bg-white p-3 mb-4">
+        <form action="/parent/marks" method="GET" class="d-flex flex-wrap gap-2 align-items-center">
+          <span class="fw-bold small text-dark me-2"><i class="fa-solid fa-calendar me-1 text-warning"></i>Filter Exam Date:</span>
+          <input type="date" name="startDate" class="form-control form-control-sm" style="width: auto;" value="<%= typeof startDate !== 'undefined' ? startDate : '' %>">
+          <span class="small text-muted">to</span>
+          <input type="date" name="endDate" class="form-control form-control-sm" style="width: auto;" value="<%= typeof endDate !== 'undefined' ? endDate : '' %>">
+          <button type="submit" class="btn btn-sm btn-primary fw-bold"><i class="fa-solid fa-filter me-1"></i>Filter</button>
+          <% if (typeof startDate !== 'undefined' && (startDate || endDate)) { %>
+            <a href="/parent/marks" class="btn btn-sm btn-outline-secondary">Clear Filter</a>
+          <% } %>
+        </form>
+      </div>
+
       <!-- Marks grouped by Exam Type -->
       <% if (Object.keys(groupedMarks).length === 0) { %>
         <div class="card border-0 shadow-sm bg-white p-5 text-center">

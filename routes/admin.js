@@ -3,6 +3,21 @@ const router = express.Router();
 const { isAuthenticated, hasRole } = require('../middleware/auth');
 const { Student, Teacher, Class, Attendance, Mark, User, Task, sequelize } = require('../models');
 const { Op } = require('sequelize');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const uploadDir = path.join(__dirname, '../public/uploads/students');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => cb(null, `student_${Date.now()}${path.extname(file.originalname)}`)
+});
+
+const upload = multer({ storage });
 
 // Apply Admin role protection to all routes in this file
 router.use(isAuthenticated, hasRole('admin'));
@@ -237,9 +252,11 @@ function formatDobToPassword(dobStr) {
 }
 
 // Create student
-router.post('/students/create', async (req, res) => {
+router.post('/students/create', upload.single('photo'), async (req, res) => {
   const { name, admissionNumber, dateOfBirth, gender, address, parentName, parentPhone, parentEmail, classId } = req.body;
   const classes = await Class.findAll({ order: [['level', 'ASC']] });
+
+  const photoUrl = req.file ? `/uploads/students/${req.file.filename}` : null;
 
   const t = await sequelize.transaction();
   try {
@@ -287,7 +304,8 @@ router.post('/students/create', async (req, res) => {
       parentName: parentName || null,
       parentPhone: parentPhone || null,
       parentEmail: parentEmail || null,
-      classId: classId === '' ? null : classId
+      classId: classId === '' ? null : classId,
+      photoUrl: photoUrl
     }, { transaction: t });
 
     // Create User login for Parent: Username = Admission Number, Password = DOB (DDMMYYYY)
@@ -311,7 +329,7 @@ router.post('/students/create', async (req, res) => {
       search: '',
       selectedClassId: '',
       error: null,
-      success: `Student added successfully! Parent Login -> ID: "${parentUsername}", Password: "${parentPassword}" (DOB: DDMMYYYY)`
+      success: `Student added successfully! Parent Login -> ID: "${parentUsername}", Password: "${parentPassword}"`
     });
   } catch (error) {
     await t.rollback();
@@ -330,7 +348,7 @@ router.post('/students/create', async (req, res) => {
 });
 
 // Update student
-router.post('/students/update/:id', async (req, res) => {
+router.post('/students/update/:id', upload.single('photo'), async (req, res) => {
   const { name, admissionNumber, dateOfBirth, gender, address, parentName, parentPhone, parentEmail, classId } = req.body;
   const studentId = parseInt(req.params.id, 10);
   try {
@@ -340,6 +358,7 @@ router.post('/students/update/:id', async (req, res) => {
     }
 
     let finalAdmissionNo = admissionNumber ? admissionNumber.trim() : student.admissionNumber;
+    const photoUrl = req.file ? `/uploads/students/${req.file.filename}` : student.photoUrl;
 
     await Student.update({
       name: name ? name.trim() : student.name,
@@ -350,7 +369,8 @@ router.post('/students/update/:id', async (req, res) => {
       parentName: parentName || null,
       parentPhone: parentPhone || null,
       parentEmail: parentEmail || null,
-      classId: classId === '' ? null : classId
+      classId: classId === '' ? null : classId,
+      photoUrl: photoUrl
     }, { where: { id: studentId } });
 
     // Update parent user login

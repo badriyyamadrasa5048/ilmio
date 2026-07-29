@@ -432,22 +432,68 @@ router.get('/tasks', async (req, res) => {
             percentage: c.percentage
           };
         });
-      }
-    }
+      // Fetch parent tasks & completed records for class students
+      const parentTasks = await Task.findAll({
+        where: {
+          targetRole: 'parent',
+          [Op.or]: [
+            { classId: null },
+            { classId: activeClassId }
+          ]
+        },
+        order: [['createdAt', 'DESC']]
+      });
 
-    // Created tasks list for management in offcanvas/modal
-    const createdTasks = await Task.findAll({
-      where: { creatorId: req.session.userId },
-      include: [{ model: Class, as: 'class' }],
-      order: [['createdAt', 'DESC']]
-    });
+      let parentCompletions = [];
+      if (students.length > 0) {
+        parentCompletions = await TaskCompletion.findAll({
+          where: {
+            studentId: students.map(s => s.id)
+          },
+          include: [
+            { model: Student, as: 'student' },
+            { model: Task, as: 'task' }
+          ],
+          order: [['updatedAt', 'DESC']]
+        });
+      }
+
+      return res.render('teacher/tasks', {
+        user: req.session,
+        activePage: 'tasks',
+        classes,
+        selectedClassId: activeClassId || '',
+        selectedClass,
+        students,
+        activeTasks,
+        completionMap,
+        parentTasks,
+        parentCompletions,
+        selectedDate,
+        activeTab,
+        createdTasks,
+        success: req.query.success || null,
+        error: req.query.error || null
+      });
+    }
 
     res.render('teacher/tasks', {
       user: req.session,
       activePage: 'tasks',
       classes,
-      selectedClassId: activeClassId || '',
-      selectedClass,
+      selectedClassId: '',
+      selectedClass: null,
+      students: [],
+      activeTasks: [],
+      completionMap: {},
+      parentTasks: [],
+      parentCompletions: [],
+      selectedDate,
+      activeTab,
+      createdTasks: [],
+      success: req.query.success || null,
+      error: req.query.error || null
+    });
       selectedDate,
       activeTab,
       students,
