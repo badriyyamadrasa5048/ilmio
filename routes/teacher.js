@@ -391,6 +391,8 @@ router.get('/tasks', async (req, res) => {
     let activeTasks = [];
     let completionMap = {};
     let selectedClass = null;
+    let parentTasks = [];
+    let parentCompletions = [];
 
     if (activeClassId) {
       selectedClass = await Class.findByPk(activeClassId);
@@ -432,8 +434,10 @@ router.get('/tasks', async (req, res) => {
             percentage: c.percentage
           };
         });
+      }
+
       // Fetch parent tasks & completed records for class students
-      const parentTasks = await Task.findAll({
+      parentTasks = await Task.findAll({
         where: {
           targetRole: 'parent',
           [Op.or]: [
@@ -444,7 +448,6 @@ router.get('/tasks', async (req, res) => {
         order: [['createdAt', 'DESC']]
       });
 
-      let parentCompletions = [];
       if (students.length > 0) {
         parentCompletions = await TaskCompletion.findAll({
           where: {
@@ -457,40 +460,29 @@ router.get('/tasks', async (req, res) => {
           order: [['updatedAt', 'DESC']]
         });
       }
-
-      return res.render('teacher/tasks', {
-        user: req.session,
-        activePage: 'tasks',
-        classes,
-        selectedClassId: activeClassId || '',
-        selectedClass,
-        students,
-        activeTasks,
-        completionMap,
-        parentTasks,
-        parentCompletions,
-        selectedDate,
-        activeTab,
-        createdTasks,
-        success: req.query.success || null,
-        error: req.query.error || null
-      });
     }
+
+    // Created tasks list for management in offcanvas/modal
+    const createdTasks = await Task.findAll({
+      where: { creatorId: req.session.userId },
+      include: [{ model: Class, as: 'class' }],
+      order: [['createdAt', 'DESC']]
+    });
 
     res.render('teacher/tasks', {
       user: req.session,
       activePage: 'tasks',
       classes,
-      selectedClassId: '',
-      selectedClass: null,
-      students: [],
-      activeTasks: [],
-      completionMap: {},
-      parentTasks: [],
-      parentCompletions: [],
+      selectedClassId: activeClassId || '',
+      selectedClass,
+      students,
+      activeTasks,
+      completionMap,
+      parentTasks,
+      parentCompletions,
       selectedDate,
       activeTab,
-      createdTasks: [],
+      createdTasks,
       success: req.query.success || null,
       error: req.query.error || null
     });
