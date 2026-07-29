@@ -494,15 +494,6 @@ router.get('/tasks', async (req, res) => {
       success: req.query.success || null,
       error: req.query.error || null
     });
-      selectedDate,
-      activeTab,
-      students,
-      activeTasks,
-      completionMap,
-      createdTasks,
-      success: req.query.success || null,
-      error: req.query.error || null
-    });
   } catch (error) {
     console.error('Teacher fetch tasks error:', error);
     res.status(500).send('Internal Server Error');
