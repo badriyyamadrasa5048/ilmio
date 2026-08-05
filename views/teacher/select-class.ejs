@@ -1,49 +1,53 @@
-<%- include('../partials/header', { pageTitle: 'Select Your Class — Teacher Portal' }) %>
+<%- include('../partials/header', { pageTitle: 'Select Class — Teacher Portal' }) %>
 
 <style>
-  .class-hero-card {
-    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  .select-class-wrapper {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .class-box-card {
+    background: white;
     border-radius: 24px;
     padding: 32px;
-    color: white;
-    box-shadow: 0 20px 30px -10px rgba(49, 46, 129, 0.3);
-    margin-bottom: 32px;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    text-decoration: none !important;
+    display: block;
   }
 
-  .class-select-card {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    border: 2px solid #f1f5f9;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
-    transition: all 0.25s ease-in-out;
+  .class-box-card:hover {
+    transform: translateY(-8px);
+    border-color: #3b82f6;
+    box-shadow: 0 20px 35px -5px rgba(59, 130, 246, 0.2);
   }
 
-  .class-select-card:hover {
-    transform: translateY(-6px);
-    border-color: #6366f1;
-    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.15);
-  }
-
-  .class-icon-badge {
-    width: 54px;
-    height: 54px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
+  .class-avatar-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    box-shadow: 0 8px 15px -3px rgba(99, 102, 241, 0.3);
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 20px;
   }
 
-  .action-btn-pill {
-    border-radius: 12px;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.2s;
+  .minimal-header-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 24px;
+    padding: 28px 32px;
+    color: white;
+    box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.3);
+    margin-bottom: 36px;
   }
 </style>
 
@@ -54,89 +58,42 @@
     <%- include('../partials/navbar') %>
 
     <div class="main-content p-4">
-      <div class="container-fluid" style="max-width: 1100px;">
+      <div class="container-fluid" style="max-width: 900px;">
 
-        <!-- Hero Header -->
-        <div class="class-hero-card">
-          <div class="row align-items-center">
-            <div class="col-lg-8">
-              <span class="badge bg-warning text-dark fw-bold px-3 py-2 rounded-pill mb-3">
-                <i class="fa-solid fa-graduation-cap me-1"></i> Teacher Portal
-              </span>
-              <h2 class="fw-bold mb-2">Assalamu Alaikum, <%= teacher ? teacher.name : user.username %>!</h2>
-              <p class="text-white-50 mb-0 lead fs-6">
-                Please select a class to view students, mark attendance, record marks, and review tasks.
-              </p>
-            </div>
-            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
-              <div class="bg-white bg-opacity-10 p-3 rounded-4 backdrop-blur d-inline-block text-start">
-                <div class="small text-white-50">Total Available Classes</div>
-                <div class="fs-3 fw-bold text-white"><%= classes.length %> Classes</div>
-              </div>
-            </div>
-          </div>
+        <!-- Minimal Header Banner -->
+        <div class="minimal-header-card text-center">
+          <span class="badge bg-warning text-dark fw-bold px-3 py-2 rounded-pill mb-2">
+            <i class="fa-solid fa-chalkboard-user me-1"></i> Welcome, <%= teacher ? teacher.name : user.username %>
+          </span>
+          <h2 class="fw-bold mb-2">ക്ലാസ്സ് തിരഞ്ഞെടുക്കുക (Select Your Class)</h2>
+          <p class="text-white-50 mb-0">
+            തുടർന്ന് പ്രവർത്തിക്കാൻ താഴെയുള്ള നിങ്ങളുടെ ക്ലാസുകളിൽ ഒന്ന് സെലക്ട് ചെയ്യുക:
+          </p>
         </div>
 
-        <!-- Class Selection Section -->
-        <div class="d-flex align-items-center justify-content-between mb-4">
-          <div>
-            <h4 class="fw-bold text-dark m-0">
-              <i class="fa-solid fa-school text-primary me-2"></i>Choose Class Workspace
-            </h4>
-            <span class="text-muted small">Click on any class action below to start managing:</span>
-          </div>
-        </div>
-
-        <!-- Class Grid -->
-        <div class="row g-4 mb-5">
+        <!-- Class Cards Grid (Shows assigned classes only) -->
+        <div class="row g-4 justify-content-center mb-5">
           <% classes.forEach(c => { %>
-            <div class="col-md-6 col-lg-4">
-              <div class="class-select-card h-100 d-flex flex-column justify-content-between">
-                <div>
-                  <!-- Card Header -->
-                  <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="d-flex align-items-center gap-3">
-                      <div class="class-icon-badge">
-                        <i class="fa-solid fa-book-open"></i>
-                      </div>
-                      <div>
-                        <h4 class="fw-bold m-0 text-dark"><%= c.name %></h4>
-                        <span class="small text-muted">Level <%= c.level || c.id %></span>
-                      </div>
-                    </div>
+            <div class="col-md-6 col-lg-5">
+              <a href="/teacher/choose/<%= c.id %>?target=attendance" class="class-box-card text-dark h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <div class="class-avatar-circle">
+                    <i class="fa-solid fa-graduation-cap"></i>
                   </div>
-
-                  <p class="text-secondary small mb-3">
-                    Room: <strong><%= c.roomNumber || 'Default' %></strong> | Manage students, attendance, tasks & marks for <%= c.name %>.
-                  </p>
+                  <span class="badge bg-primary-subtle text-primary border border-primary fw-bold px-3 py-2 rounded-pill fs-6">
+                    Level <%= c.level || c.id %>
+                  </span>
                 </div>
 
-                <!-- Action Grid -->
-                <div class="pt-3 border-top">
-                  <div class="d-grid gap-2">
-                    <a href="/teacher/attendance?classId=<%= c.id %>" class="btn btn-primary action-btn-pill fw-bold text-white py-2">
-                      <i class="fa-solid fa-calendar-check me-2"></i>Mark Attendance
-                    </a>
+                <h3 class="fw-bold text-dark mb-2"><%= c.name %></h3>
+                <p class="text-muted small mb-4">
+                  ഈ ക്ലാസിലെ വിദ്യാർത്ഥികൾ, അറ്റൻഡൻസ്, ടാസ്കുകൾ, മാർക്കുകൾ എന്നിവ കാണാൻ ഇവിടെ ക്ലിക്ക് ചെയ്യുക.
+                </p>
 
-                    <div class="row g-2">
-                      <div class="col-6">
-                        <a href="/teacher/tasks?classId=<%= c.id %>" class="btn btn-outline-indigo action-btn-pill w-100 text-center" style="border-color:#6366f1; color:#6366f1;">
-                          <i class="fa-solid fa-list-check me-1"></i>Tasks
-                        </a>
-                      </div>
-                      <div class="col-6">
-                        <a href="/teacher/marks?classId=<%= c.id %>" class="btn btn-outline-success action-btn-pill w-100 text-center">
-                          <i class="fa-solid fa-file-signature me-1"></i>Marks
-                        </a>
-                      </div>
-                    </div>
-
-                    <a href="/teacher/students?classId=<%= c.id %>" class="btn btn-light action-btn-pill text-secondary text-center mt-1">
-                      <i class="fa-solid fa-users me-1"></i>View Students List
-                    </a>
-                  </div>
+                <div class="btn btn-primary btn-lg w-100 fw-bold rounded-3 py-3">
+                  <i class="fa-solid fa-circle-arrow-right me-2"></i>Select <%= c.name %>
                 </div>
-              </div>
+              </a>
             </div>
           <% }) %>
         </div>

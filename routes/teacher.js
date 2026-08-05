@@ -34,6 +34,18 @@ router.get('/select-class', async (req, res) => {
   }
 });
 
+// Class Selection Endpoint (Store selected class in session)
+router.get('/choose/:classId', async (req, res) => {
+  const { classId } = req.params;
+  const targetClass = await Class.findByPk(classId);
+  if (targetClass) {
+    req.session.selectedClassId = targetClass.id;
+    req.session.selectedClassName = targetClass.name;
+  }
+  const target = req.query.target || 'attendance';
+  res.redirect(`/teacher/${target}?classId=${classId}`);
+});
+
 // ==========================================
 // 1. VIEW ASSIGNED STUDENTS
 // ==========================================

@@ -15,6 +15,11 @@
   </div>
 
   <div class="navbar-actions">
+    <% if (user && user.userRole === 'teacher') { %>
+      <a href="/teacher/select-class" class="btn btn-warning btn-sm fw-bold rounded-pill px-3 me-2 shadow-xs" title="Switch Class">
+        <i class="fa-solid fa-right-left me-1"></i> Switch Class
+      </a>
+    <% } %>
     <span class="d-none d-lg-flex align-items-center gap-2 me-2" style="font-size:13px;color:var(--text-muted);font-weight:500;">
       <i class="fa-regular fa-calendar"></i>
       <%= today %>
