@@ -34,57 +34,31 @@ router.get('/select-class', async (req, res) => {
   }
 });
 
-// Class Selection Endpoint (Store selected class in session)
-router.get('/choose/:classId', async (req, res) => {
-  const { classId } = req.params;
-  const targetClass = await Class.findByPk(classId);
-  if (targetClass) {
-    req.session.selectedClassId = targetClass.id;
-    req.session.selectedClassName = targetClass.name;
-  }
-  const target = req.query.target || 'attendance';
-  res.redirect(`/teacher/${target}?classId=${classId}`);
-});
-
 // ==========================================
 // 1. VIEW ASSIGNED STUDENTS
 // ==========================================
 router.get('/students', async (req, res) => {
   const teacherId = req.session.referenceId;
-  const { classId } = req.query;
   try {
-    let classes = await Class.findAll({
-      where: { teacherId },
-      order: [['level', 'ASC']]
+    // Find all classes assigned to this teacher
+    const classes = await Class.findAll({
+      where: { teacherId }
     });
-    if (classes.length === 0) {
-      classes = await Class.findAll({ order: [['level', 'ASC']] });
-    }
 
-    let activeClassId = classId || req.session.selectedClassId;
-    if (!activeClassId && classes.length > 0) {
-      activeClassId = classes[0].id;
-    }
+    const classIds = classes.map(c => c.id);
 
-    let students = [];
-    let selectedClass = null;
-
-    if (activeClassId) {
-      selectedClass = await Class.findByPk(activeClassId);
-      students = await Student.findAll({
-        where: { classId: activeClassId },
-        include: [{ model: Class, as: 'class' }],
-        order: [['name', 'ASC']]
-      });
-    }
+    // Find all students in these classes
+    const students = await Student.findAll({
+      where: { classId: classIds },
+      include: [{ model: Class, as: 'class' }],
+      order: [[{ model: Class, as: 'class' }, 'name', 'ASC'], ['name', 'ASC']]
+    });
 
     res.render('teacher/students', {
       user: req.session,
       activePage: 'students',
       students,
-      classes,
-      selectedClassId: activeClassId || '',
-      selectedClass
+      classes
     });
   } catch (error) {
     console.error('Teacher view students error:', error);
@@ -155,7 +129,7 @@ router.get('/attendance', async (req, res) => {
       selectedClass = await Class.findByPk(activeClassId);
       students = await Student.findAll({
         where: { classId: activeClassId },
-        order: [['name', 'ASC']]
+        order: [['admissionNumber', 'ASC'], ['name', 'ASC']]
       });
 
       if (students.length > 0) {
@@ -331,11 +305,13 @@ router.get('/marks', async (req, res) => {
 
     let students = [];
     let marksMap = {};
+    let selectedClass = null;
 
     if (classId) {
+      selectedClass = await Class.findByPk(classId);
       students = await Student.findAll({
         where: { classId },
-        order: [['name', 'ASC']]
+        order: [['admissionNumber', 'ASC'], ['name', 'ASC']]
       });
 
       const existingMarks = await Mark.findAll({
@@ -360,6 +336,7 @@ router.get('/marks', async (req, res) => {
       classes,
       students,
       selectedClassId: classId || '',
+      selectedClass,
       subjectName: activeSubject,
       examType: activeExamType,
       examDate: activeExamDate,

@@ -222,7 +222,7 @@ router.get('/students', async (req, res) => {
     const students = await Student.findAll({
       where: whereClause,
       include: [{ model: Class, as: 'class' }],
-      order: [['name', 'ASC']]
+      order: [['admissionNumber', 'ASC'], ['name', 'ASC']]
     });
     const classes = await Class.findAll({ order: [['level', 'ASC']] });
     res.render('admin/students', { 
@@ -475,7 +475,7 @@ router.get('/attendance', async (req, res) => {
       selectedClass = await Class.findByPk(activeClassId);
       students = await Student.findAll({
         where: { classId: activeClassId },
-        order: [['name', 'ASC']]
+        order: [['admissionNumber', 'ASC'], ['name', 'ASC']]
       });
 
       if (students.length > 0) {
