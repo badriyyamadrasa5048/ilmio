@@ -32,54 +32,9 @@
           <div class="col-md-8">
             <h4 class="fw-bold mb-2 text-warning"><i class="fa-solid fa-chalkboard-user me-2"></i>Welcome, <%= teacher.name %>!</h4>
             <p class="mb-0 text-white-50">
-              Department: <strong><%= teacher.subject || 'General' %></strong> | Select your class below to begin.
+              Department: <strong><%= teacher.subject || 'General' %></strong> | Qualification: <strong><%= teacher.qualification || 'N/A' %></strong>
             </p>
           </div>
-        </div>
-      </div>
-
-      <!-- Prominent Class Selector Hub (Request: teacher login cheythitt oru class select option) -->
-      <div class="card border-0 shadow-sm p-4 mb-4 bg-white rounded-4">
-        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-          <h5 class="fw-bold text-dark m-0">
-            <i class="fa-solid fa-school text-primary me-2"></i>Select Your Class
-          </h5>
-          <span class="badge bg-primary rounded-pill"><%= classes.length %> Available Classes</span>
-        </div>
-        <p class="text-muted small mb-4">Choose a class to mark attendance, record marks, or review tasks:</p>
-
-        <div class="row g-3">
-          <% classes.forEach(c => { %>
-            <div class="col-md-6 col-lg-4">
-              <div class="card border border-2 border-light shadow-xs rounded-4 p-3 hover-lift bg-light h-100">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="bg-primary text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-                      <i class="fa-solid fa-graduation-cap fs-5"></i>
-                    </div>
-                    <div>
-                      <h6 class="fw-bold m-0 text-dark fs-5"><%= c.name %></h6>
-                      <span class="small text-muted">Class Level <%= c.level || c.id %></span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="d-grid gap-2">
-                  <a href="/teacher/attendance?classId=<%= c.id %>" class="btn btn-warning btn-sm fw-bold text-dark py-2">
-                    <i class="fa-solid fa-calendar-check me-2"></i>Mark Attendance
-                  </a>
-                  <div class="d-flex gap-2">
-                    <a href="/teacher/tasks?classId=<%= c.id %>" class="btn btn-outline-primary btn-sm w-50 fw-semibold">
-                      <i class="fa-solid fa-list-check me-1"></i>Tasks
-                    </a>
-                    <a href="/teacher/marks?classId=<%= c.id %>" class="btn btn-outline-success btn-sm w-50 fw-semibold">
-                      <i class="fa-solid fa-file-signature me-1"></i>Marks
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          <% }) %>
         </div>
       </div>
 
