@@ -1,6 +1,7 @@
 <%
   const p    = typeof activePage !== 'undefined' ? activePage : '';
   const role = (typeof user !== 'undefined' && user) ? user.userRole : null;
+  if (p === 'select-class') return;
 %>
 
 <!-- ========== MOBILE BOTTOM NAV ========== -->
