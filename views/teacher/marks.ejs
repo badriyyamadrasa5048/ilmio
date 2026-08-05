@@ -37,14 +37,13 @@
       <!-- Criteria Selectors -->
       <div class="card border-0 shadow-sm bg-white p-4 mb-4">
         <form action="/teacher/marks" method="GET" class="row g-3 align-items-end">
+          <input type="hidden" name="classId" value="<%= selectedClassId %>">
           <div class="col-md-3">
-            <label class="form-label text-secondary fw-semibold">Select Class</label>
-            <select name="classId" class="form-select" required>
-              <option value="">Choose Class...</option>
-              <% classes.forEach(c => { %>
-                <option value="<%= c.id %>" <%= selectedClassId == c.id ? 'selected' : '' %>><%= c.name %></option>
-              <% }) %>
-            </select>
+            <label class="form-label text-secondary fw-semibold">Selected Class</label>
+            <div class="d-flex align-items-center justify-content-between border rounded p-2 bg-light">
+              <span class="fw-bold text-dark"><%= selectedClass ? selectedClass.name : 'Class' %></span>
+              <a href="/teacher/select-class" class="btn btn-sm btn-outline-warning text-dark fw-bold px-2 py-0" style="font-size:12px;">Switch</a>
+            </div>
           </div>
           <div class="col-md-3">
             <label class="form-label text-secondary fw-semibold">Subject Name</label>

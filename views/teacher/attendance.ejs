@@ -240,15 +240,14 @@
             </button>
           </div>
 
-          <!-- Class Selector Pill Row -->
-          <div class="px-3 mb-4">
-            <div class="d-flex gap-2 overflow-x-auto pb-2" style="white-space: nowrap;">
-              <% classes.forEach(c => { %>
-                <button type="button" class="btn btn-sm <%= selectedClassId == c.id ? 'btn-violet text-white fw-bold' : 'btn-outline-secondary' %> px-3" onclick="selectClass('<%= c.id %>')" style="border-radius:20px;">
-                  <%= c.name %>
-                </button>
-              <% }) %>
-            </div>
+          <!-- Single Selected Class Header & Switch Class Button -->
+          <div class="px-3 mb-3 d-flex align-items-center justify-content-between">
+            <h5 class="fw-bold text-dark m-0">
+              <i class="fa-solid fa-graduation-cap text-primary me-2"></i><%= selectedClass ? selectedClass.name : 'Class Workspace' %>
+            </h5>
+            <a href="/teacher/select-class" class="btn btn-sm btn-outline-warning text-dark fw-bold rounded-pill px-3 shadow-xs">
+              <i class="fa-solid fa-rotate me-1"></i> Switch Class
+            </a>
           </div>
 
           <!-- Student Cards List -->

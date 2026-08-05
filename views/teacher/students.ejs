@@ -12,14 +12,12 @@
       <!-- Page Header -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 class="fw-bold text-dark mb-1">My Students</h2>
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-              <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
-              <li class="breadcrumb-item active" aria-current="page">My Students</li>
-            </ol>
-          </nav>
+          <h2 class="fw-bold text-dark mb-1">Students — <%= selectedClass ? selectedClass.name : 'Selected Class' %></h2>
+          <span class="text-secondary small">Viewing students enrolled in <%= selectedClass ? selectedClass.name : 'selected class' %></span>
         </div>
+        <a href="/teacher/select-class" class="btn btn-warning fw-bold rounded-pill px-3 shadow-xs">
+          <i class="fa-solid fa-rotate me-1"></i> Switch Class
+        </a>
       </div>
 
       <!-- Students Table -->

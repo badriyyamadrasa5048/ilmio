@@ -1,106 +1,138 @@
 <%- include('../partials/header', { pageTitle: 'Select Class — Teacher Portal' }) %>
 
 <style>
-  .select-class-wrapper {
-    min-height: 80vh;
+  body {
+    background: #0f172a !important;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0;
     padding: 20px;
+    font-family: 'Inter', sans-serif;
   }
 
-  .class-box-card {
-    background: white;
-    border-radius: 24px;
-    padding: 32px;
-    border: 2px solid #e2e8f0;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    text-decoration: none !important;
-    display: block;
+  .select-class-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
   }
 
-  .class-box-card:hover {
-    transform: translateY(-8px);
-    border-color: #3b82f6;
-    box-shadow: 0 20px 35px -5px rgba(59, 130, 246, 0.2);
-  }
-
-  .class-avatar-circle {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  .select-header {
+    text-align: center;
     color: white;
+    margin-bottom: 36px;
+  }
+
+  .select-header h3 {
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .select-header p {
+    color: #94a3b8;
+    font-size: 15px;
+  }
+
+  .class-card-btn {
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: 20px;
+    padding: 28px 24px;
+    color: white;
+    text-decoration: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    transition: all 0.25s ease;
+  }
+
+  .class-card-btn:hover {
+    background: #3b82f6;
+    border-color: #60a5fa;
+    color: white;
+    transform: translateY(-4px);
+    box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.4);
+  }
+
+  .class-card-btn:hover .class-icon-circle {
+    background: white;
+    color: #3b82f6;
+  }
+
+  .class-icon-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 800;
-    margin-bottom: 20px;
+    transition: all 0.25s ease;
   }
 
-  .minimal-header-card {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    border-radius: 24px;
-    padding: 28px 32px;
-    color: white;
-    box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.3);
-    margin-bottom: 36px;
+  .logout-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 20px;
+    transition: color 0.2s;
+  }
+
+  .logout-link:hover {
+    color: #ef4444;
   }
 </style>
 
-<div class="wrapper">
-  <%- include('../partials/sidebar') %>
+<div class="select-class-container">
 
-  <div class="page-right">
-    <%- include('../partials/navbar') %>
-
-    <div class="main-content p-4">
-      <div class="container-fluid" style="max-width: 900px;">
-
-        <!-- Minimal Header Banner -->
-        <div class="minimal-header-card text-center">
-          <span class="badge bg-warning text-dark fw-bold px-3 py-2 rounded-pill mb-2">
-            <i class="fa-solid fa-chalkboard-user me-1"></i> Welcome, <%= teacher ? teacher.name : user.username %>
-          </span>
-          <h2 class="fw-bold mb-2">ക്ലാസ്സ് തിരഞ്ഞെടുക്കുക (Select Your Class)</h2>
-          <p class="text-white-50 mb-0">
-            തുടർന്ന് പ്രവർത്തിക്കാൻ താഴെയുള്ള നിങ്ങളുടെ ക്ലാസുകളിൽ ഒന്ന് സെലക്ട് ചെയ്യുക:
-          </p>
-        </div>
-
-        <!-- Class Cards Grid (Shows assigned classes only) -->
-        <div class="row g-4 justify-content-center mb-5">
-          <% classes.forEach(c => { %>
-            <div class="col-md-6 col-lg-5">
-              <a href="/teacher/choose/<%= c.id %>?target=attendance" class="class-box-card text-dark h-100">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                  <div class="class-avatar-circle">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                  </div>
-                  <span class="badge bg-primary-subtle text-primary border border-primary fw-bold px-3 py-2 rounded-pill fs-6">
-                    Level <%= c.level || c.id %>
-                  </span>
-                </div>
-
-                <h3 class="fw-bold text-dark mb-2"><%= c.name %></h3>
-                <p class="text-muted small mb-4">
-                  ഈ ക്ലാസിലെ വിദ്യാർത്ഥികൾ, അറ്റൻഡൻസ്, ടാസ്കുകൾ, മാർക്കുകൾ എന്നിവ കാണാൻ ഇവിടെ ക്ലിക്ക് ചെയ്യുക.
-                </p>
-
-                <div class="btn btn-primary btn-lg w-100 fw-bold rounded-3 py-3">
-                  <i class="fa-solid fa-circle-arrow-right me-2"></i>Select <%= c.name %>
-                </div>
-              </a>
-            </div>
-          <% }) %>
-        </div>
-
-      </div>
+  <!-- Clean Standalone Header -->
+  <div class="select-header">
+    <div class="mb-3">
+      <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold" style="font-size: 13px;">
+        <i class="fa-solid fa-mosque me-1"></i> Ilmio Madrasa Teacher Portal
+      </span>
     </div>
+    <h3>Assalamu Alaikum, <%= teacher ? teacher.name : user.username %>!</h3>
+    <p>Select your class below to enter your workspace:</p>
   </div>
+
+  <!-- Show ONLY Assigned Classes (No extras, no navigation sidebar) -->
+  <div>
+    <% classes.forEach(c => { %>
+      <a href="/teacher/choose/<%= c.id %>?target=attendance" class="class-card-btn">
+        <div class="d-flex align-items-center gap-3">
+          <div class="class-icon-circle">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div>
+            <h4 class="fw-bold m-0 text-white" style="font-size: 22px;"><%= c.name %></h4>
+            <span class="small" style="color: #94a3b8;">Class Level <%= c.level || c.id %></span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 font-weight-bold">
+          <span>Enter Class</span>
+          <i class="fa-solid fa-arrow-right fs-5"></i>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+
+  <div class="text-center">
+    <a href="/auth/logout" class="logout-link">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </a>
+  </div>
+
 </div>
 
 <%- include('../partials/footer') %>

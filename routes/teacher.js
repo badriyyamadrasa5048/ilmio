@@ -51,26 +51,40 @@ router.get('/choose/:classId', async (req, res) => {
 // ==========================================
 router.get('/students', async (req, res) => {
   const teacherId = req.session.referenceId;
+  const { classId } = req.query;
   try {
-    // Find all classes assigned to this teacher
-    const classes = await Class.findAll({
-      where: { teacherId }
+    let classes = await Class.findAll({
+      where: { teacherId },
+      order: [['level', 'ASC']]
     });
+    if (classes.length === 0) {
+      classes = await Class.findAll({ order: [['level', 'ASC']] });
+    }
 
-    const classIds = classes.map(c => c.id);
+    let activeClassId = classId || req.session.selectedClassId;
+    if (!activeClassId && classes.length > 0) {
+      activeClassId = classes[0].id;
+    }
 
-    // Find all students in these classes
-    const students = await Student.findAll({
-      where: { classId: classIds },
-      include: [{ model: Class, as: 'class' }],
-      order: [[{ model: Class, as: 'class' }, 'name', 'ASC'], ['name', 'ASC']]
-    });
+    let students = [];
+    let selectedClass = null;
+
+    if (activeClassId) {
+      selectedClass = await Class.findByPk(activeClassId);
+      students = await Student.findAll({
+        where: { classId: activeClassId },
+        include: [{ model: Class, as: 'class' }],
+        order: [['name', 'ASC']]
+      });
+    }
 
     res.render('teacher/students', {
       user: req.session,
       activePage: 'students',
       students,
-      classes
+      classes,
+      selectedClassId: activeClassId || '',
+      selectedClass
     });
   } catch (error) {
     console.error('Teacher view students error:', error);
