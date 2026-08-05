@@ -8,6 +8,33 @@ const { Op } = require('sequelize');
 router.use(isAuthenticated, hasRole('teacher'));
 
 // ==========================================
+// 0. DEDICATED CLASS SELECTION PAGE
+// ==========================================
+router.get('/select-class', async (req, res) => {
+  const teacherId = req.session.referenceId;
+  try {
+    const teacher = await Teacher.findByPk(teacherId, {
+      include: [{ model: Class, as: 'classes' }]
+    });
+
+    let classes = (teacher && teacher.classes) ? teacher.classes : [];
+    if (classes.length === 0) {
+      classes = await Class.findAll({ order: [['level', 'ASC']] });
+    }
+
+    res.render('teacher/select-class', {
+      user: req.session,
+      activePage: 'select-class',
+      teacher,
+      classes
+    });
+  } catch (error) {
+    console.error('Teacher select class error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// ==========================================
 // 1. VIEW ASSIGNED STUDENTS
 // ==========================================
 router.get('/students', async (req, res) => {

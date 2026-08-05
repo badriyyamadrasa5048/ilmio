@@ -85,6 +85,13 @@
 
     <% } else if (role === 'teacher') { %>
 
+      <li class="nav-item <%= p === 'select-class' ? 'active' : '' %>">
+        <a href="/teacher/select-class" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-school text-warning"></i></span>
+          Select Class
+        </a>
+      </li>
+
       <li class="nav-item <%= p === 'my-students' ? 'active' : '' %>">
         <a href="/teacher/students" class="nav-link">
           <span class="nav-icon"><i class="fa-solid fa-users"></i></span>

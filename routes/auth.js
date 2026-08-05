@@ -50,6 +50,10 @@ router.post('/login', async (req, res) => {
     req.session.userRole = user.role;
     req.session.referenceId = user.referenceId;
 
+    if (user.role === 'teacher') {
+      return res.redirect('/teacher/select-class');
+    }
+
     res.redirect('/dashboard');
   } catch (error) {
     console.error('Login error:', error);
