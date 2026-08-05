@@ -48,16 +48,18 @@ router.get('/students', async (req, res) => {
 function calculateStatus(checkInTime, startTime, endTime, graceTime) {
   if (!checkInTime) return 'Absent';
 
-  const parseTime = (timeStr) => {
+  const parseTime = (timeStr, defaultMin) => {
+    if (!timeStr || typeof timeStr !== 'string') return defaultMin;
     const parts = timeStr.split(':');
-    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    if (parts.length < 2) return defaultMin;
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
   };
 
   try {
-    const checkInMin = parseTime(checkInTime);
-    const startMin = parseTime(startTime);
-    const endMin = parseTime(endTime);
-    const graceLimitMin = startMin + graceTime;
+    const checkInMin = parseTime(checkInTime, 510);
+    const startMin = parseTime(startTime, 510);
+    const endMin = parseTime(endTime, 930);
+    const graceLimitMin = startMin + (parseInt(graceTime, 10) || 10);
 
     if (checkInMin <= graceLimitMin) {
       return 'Present';
@@ -80,8 +82,11 @@ router.get('/attendance', async (req, res) => {
   const selectedDate = date || today;
 
   try {
-    // Fetch classes taught by this teacher
-    const classes = await Class.findAll({ where: { teacherId } });
+    // Fetch classes taught by this teacher (or all classes if not assigned)
+    let classes = await Class.findAll({ where: { teacherId }, order: [['level', 'ASC']] });
+    if (classes.length === 0) {
+      classes = await Class.findAll({ order: [['level', 'ASC']] });
+    }
 
     // Auto-select the first class if none selected
     let activeClassId = classId;
@@ -377,10 +382,13 @@ router.get('/tasks', async (req, res) => {
   const activeTab = tab || 'routines'; // 'routines' (daily) vs 'tasks' (permanent)
 
   try {
-    const classes = await Class.findAll({ 
+    let classes = await Class.findAll({ 
       where: { teacherId },
-      order: [['name', 'ASC']]
+      order: [['level', 'ASC']]
     });
+    if (classes.length === 0) {
+      classes = await Class.findAll({ order: [['level', 'ASC']] });
+    }
 
     let activeClassId = classId;
     if (!activeClassId && classes.length > 0) {

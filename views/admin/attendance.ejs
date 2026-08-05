@@ -1,0 +1,246 @@
+<%- include('../partials/header', { pageTitle: 'Mark Student Attendance — Admin' }) %>
+
+<style>
+  /* Header Date Selector styling */
+  .attendance-header-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-radius: 20px;
+    padding: 20px 24px;
+    color: white;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+    margin-bottom: 24px;
+  }
+
+  .date-picker-pills {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .date-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+
+  .date-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .student-card {
+    background: white;
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+    border: 1px solid #eef2f6;
+  }
+
+  .roll-badge {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .tick-icon-present {
+    color: #10b981;
+    font-size: 34px;
+    cursor: pointer;
+  }
+
+  .tick-icon-absent {
+    color: #cbd5e1;
+    font-size: 34px;
+    cursor: pointer;
+  }
+</style>
+
+<div class="wrapper">
+  <%- include('../partials/sidebar') %>
+
+  <div class="page-right">
+    <%- include('../partials/navbar') %>
+
+    <div class="main-content p-4">
+      <div class="container-fluid" style="max-width: 800px;">
+
+        <!-- Success/Error Alerts -->
+        <% if (success) { %>
+          <div class="alert alert-success rounded-3"><%= success %></div>
+        <% } %>
+        <% if (error) { %>
+          <div class="alert alert-danger rounded-3"><%= error %></div>
+        <% } %>
+
+        <!-- Filter Form -->
+        <form action="/admin/attendance" method="GET" id="adminAttendanceFilterForm" class="d-none">
+          <input type="hidden" name="classId" id="adminSelectedClassIdInput" value="<%= selectedClassId || '' %>">
+          <input type="date" name="date" id="adminAttendanceDateInput" value="<%= selectedDate %>">
+        </form>
+
+        <!-- Attendance Header Card -->
+        <div class="attendance-header-card">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+              <h4 class="fw-bold mb-1"><i class="fa-solid fa-calendar-check text-warning me-2"></i>Mark Student Attendance</h4>
+              <p class="small text-white-50 mb-0">Admin Portal — Direct Attendance Entry & Updates</p>
+            </div>
+
+            <!-- Date Selector -->
+            <div class="date-picker-pills">
+              <button type="button" class="date-btn" id="adminPrevDayBtn"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="text-center">
+                <input type="date" class="bg-transparent border-0 text-white fw-bold text-center" style="outline:none; width: 130px;" value="<%= selectedDate %>" onchange="document.getElementById('adminAttendanceDateInput').value=this.value; document.getElementById('adminAttendanceFilterForm').submit();">
+              </div>
+              <button type="button" class="date-btn" id="adminNextDayBtn"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+
+          <!-- Class Pills -->
+          <div class="d-flex gap-2 overflow-x-auto mt-4 pt-2">
+            <% classes.forEach(c => { %>
+              <button type="button" class="btn btn-sm <%= selectedClassId == c.id ? 'btn-warning fw-bold text-dark' : 'btn-outline-light' %> px-3 rounded-pill" onclick="document.getElementById('adminSelectedClassIdInput').value='<%= c.id %>'; document.getElementById('adminAttendanceFilterForm').submit();">
+                <%= c.name %>
+              </button>
+            <% }) %>
+          </div>
+        </div>
+
+        <!-- Student List -->
+        <% if (selectedClassId && selectedClass) { %>
+          <div class="card border-0 shadow-sm p-4 rounded-4 bg-white mb-4">
+            <h6 class="fw-bold text-dark border-bottom pb-3 mb-4">
+              Students in <span class="text-primary"><%= selectedClass.name %></span> (<%= students.length %> Students)
+            </h6>
+
+            <% if (students.length === 0) { %>
+              <div class="text-center text-muted py-5">
+                <i class="fa-solid fa-user-slash fa-3x mb-3 text-secondary"></i>
+                <p>No students assigned to this class yet.</p>
+              </div>
+            <% } else { %>
+              <% students.forEach((student, idx) => { %>
+                <% 
+                  const record = attendanceMap[student.id] || {};
+                  const isPresent = record.status === 'Present' || record.status === 'Late';
+                  const statusName = record.status || 'Absent';
+                %>
+                <div class="student-card">
+                  <div class="d-flex align-items-center gap-3">
+                    <span class="roll-badge"><%= idx + 1 %></span>
+                    <div>
+                      <h6 class="fw-bold m-0 text-dark"><%= student.name %></h6>
+                      <span class="small text-muted">Adm No: <%= student.admissionNumber %></span>
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-center gap-3">
+                    <span id="badge_<%= student.id %>" class="badge <%= statusName === 'Present' ? 'bg-success' : statusName === 'Late' ? 'bg-warning text-dark' : 'bg-secondary' %>">
+                      <%= statusName.toUpperCase() %>
+                    </span>
+
+                    <div onclick="toggleAdminAttendance('<%= student.id %>', '<%= isPresent ? 'false' : 'true' %>')">
+                      <% if (isPresent) { %>
+                        <i class="fa-solid fa-circle-check tick-icon-present" id="tick_<%= student.id %>"></i>
+                      <% } else { %>
+                        <i class="fa-regular fa-circle-check tick-icon-absent" id="tick_<%= student.id %>"></i>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        <% } %>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function toggleAdminAttendance(studentId, newCheckedVal) {
+    const classId = "<%= selectedClassId %>";
+    const date = "<%= selectedDate %>";
+    const tickElem = document.getElementById(`tick_${studentId}`);
+    const badgeElem = document.getElementById(`badge_${studentId}`);
+
+    const now = new Date();
+    const hrs = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    const timeVal = `${hrs}:${mins}`;
+
+    try {
+      const response = await fetch('/admin/attendance/save-single', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classId,
+          date,
+          studentId,
+          checked: newCheckedVal,
+          checkInTime: timeVal
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        if (newCheckedVal === 'true') {
+          tickElem.className = 'fa-solid fa-circle-check tick-icon-present';
+          badgeElem.className = data.status === 'Late' ? 'badge bg-warning text-dark' : 'badge bg-success';
+          badgeElem.textContent = data.status.toUpperCase();
+          tickElem.setAttribute('onclick', `toggleAdminAttendance('${studentId}', 'false')`);
+        } else {
+          tickElem.className = 'fa-regular fa-circle-check tick-icon-absent';
+          badgeElem.className = 'badge bg-secondary';
+          badgeElem.textContent = 'ABSENT';
+          tickElem.setAttribute('onclick', `toggleAdminAttendance('${studentId}', 'true')`);
+        }
+      } else {
+        alert('Failed to save attendance.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Connection error saving attendance.');
+    }
+  }
+
+  document.getElementById('adminPrevDayBtn')?.addEventListener('click', () => {
+    const cur = new Date("<%= selectedDate %>");
+    cur.setDate(cur.getDate() - 1);
+    document.getElementById('adminAttendanceDateInput').value = cur.toISOString().split('T')[0];
+    document.getElementById('adminAttendanceFilterForm').submit();
+  });
+
+  document.getElementById('adminNextDayBtn')?.addEventListener('click', () => {
+    const cur = new Date("<%= selectedDate %>");
+    cur.setDate(cur.getDate() + 1);
+    document.getElementById('adminAttendanceDateInput').value = cur.toISOString().split('T')[0];
+    document.getElementById('adminAttendanceFilterForm').submit();
+  });
+</script>
+
+<%- include('../partials/footer') %>

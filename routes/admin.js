@@ -423,8 +423,143 @@ router.post('/students/delete/:id', async (req, res) => {
   }
 });
 
+function calculateStatus(checkInTime, startTime, endTime, graceTime) {
+  if (!checkInTime) return 'Absent';
+
+  const parseTime = (timeStr, defaultMin) => {
+    if (!timeStr || typeof timeStr !== 'string') return defaultMin;
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return defaultMin;
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+  };
+
+  try {
+    const checkInMin = parseTime(checkInTime, 510);
+    const startMin = parseTime(startTime, 510);
+    const endMin = parseTime(endTime, 930);
+    const graceLimitMin = startMin + (parseInt(graceTime, 10) || 10);
+
+    if (checkInMin <= graceLimitMin) {
+      return 'Present';
+    } else if (checkInMin <= endMin) {
+      return 'Late';
+    } else {
+      return 'Absent';
+    }
+  } catch (err) {
+    console.error('Error parsing time in calculateStatus:', err);
+    return 'Present';
+  }
+}
+
 // ==========================================
-// 4. REPORTS SECTION
+// 4. ADMIN ATTENDANCE MARKING MODULE
+// ==========================================
+router.get('/attendance', async (req, res) => {
+  const { classId, date } = req.query;
+  const today = new Date().toISOString().split('T')[0];
+  const selectedDate = date || today;
+
+  try {
+    const classes = await Class.findAll({ order: [['level', 'ASC']] });
+    let activeClassId = classId;
+    if (!activeClassId && classes.length > 0) {
+      activeClassId = classes[0].id;
+    }
+
+    let students = [];
+    let attendanceMap = {};
+    let selectedClass = null;
+
+    if (activeClassId) {
+      selectedClass = await Class.findByPk(activeClassId);
+      students = await Student.findAll({
+        where: { classId: activeClassId },
+        order: [['name', 'ASC']]
+      });
+
+      if (students.length > 0) {
+        const existingAttendance = await Attendance.findAll({
+          where: {
+            studentId: students.map(s => s.id),
+            date: selectedDate
+          }
+        });
+
+        existingAttendance.forEach(att => {
+          attendanceMap[att.studentId] = {
+            status: att.status,
+            checkInTime: att.checkInTime || '',
+            notes: att.notes || ''
+          };
+        });
+      }
+    }
+
+    res.render('admin/attendance', {
+      user: req.session,
+      activePage: 'attendance-marking',
+      classes,
+      students,
+      selectedClassId: activeClassId || '',
+      selectedClass,
+      selectedDate,
+      attendanceMap,
+      success: req.query.success || null,
+      error: req.query.error || null
+    });
+  } catch (error) {
+    console.error('Admin get attendance error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Admin Save single student attendance instantly via AJAX
+router.post('/attendance/save-single', async (req, res) => {
+  const { classId, date, studentId, checked, checkInTime } = req.body;
+  try {
+    const targetClass = await Class.findByPk(classId);
+    const startTime = targetClass ? targetClass.startTime : '08:30:00';
+    const endTime = targetClass ? targetClass.endTime : '15:30:00';
+    const graceTime = targetClass ? targetClass.graceTime : 10;
+
+    let status = 'Absent';
+    let savedTime = null;
+
+    if (checked === 'true') {
+      savedTime = checkInTime || null;
+      status = calculateStatus(savedTime, startTime, endTime, graceTime);
+    }
+
+    const existing = await Attendance.findOne({
+      where: {
+        studentId: parseInt(studentId, 10),
+        date: date
+      }
+    });
+
+    if (existing) {
+      existing.status = status;
+      existing.checkInTime = savedTime;
+      await existing.save();
+    } else {
+      await Attendance.create({
+        studentId: parseInt(studentId, 10),
+        date: date,
+        status: status,
+        checkInTime: savedTime
+      });
+    }
+
+    res.json({ success: true, status, checkInTime: savedTime });
+  } catch (error) {
+    console.error('Admin save single attendance error:', error);
+    res.status(500).json({ error: 'Failed to save attendance' });
+  }
+});
+
+// ==========================================
+// 5. REPORTS SECTION
 // ==========================================
 
 // Attendance reports
