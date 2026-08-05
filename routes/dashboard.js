@@ -81,14 +81,17 @@ router.get('/', isAuthenticated, async (req, res) => {
         return res.status(404).render('auth/login', { error: 'Teacher profile not found.', success: null });
       }
 
+      // Get classes taught by the teacher (or all classes if not specifically assigned)
+      let classes = teacher.classes || [];
+      if (classes.length === 0) {
+        classes = await Class.findAll({ order: [['level', 'ASC']] });
+      }
+      const teacherClassIds = classes.map(c => c.id);
+
       // Count students in teacher's classes
-      const teacherClassIds = teacher.classes.map(c => c.id);
       const studentCount = await Student.count({
         where: { classId: { [Op.in]: teacherClassIds } }
       });
-
-      // Get classes taught by the teacher
-      const classes = teacher.classes || [];
 
       // Get recent marks input by the teacher
       const recentMarks = await Mark.findAll({
