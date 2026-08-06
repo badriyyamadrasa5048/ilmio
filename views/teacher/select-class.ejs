@@ -114,24 +114,24 @@
                 <!-- Action Grid -->
                 <div class="pt-3 border-top">
                   <div class="d-grid gap-2">
-                    <a href="/teacher/attendance?classId=<%= c.id %>" class="btn btn-primary action-btn-pill fw-bold text-white py-2">
-                      <i class="fa-solid fa-calendar-check me-2"></i>Mark Attendance
+                    <a href="/teacher/activate-class/<%= c.id %>?goto=/teacher/attendance" class="btn btn-warning action-btn-pill fw-bold text-dark py-2 shadow-xs">
+                      <i class="fa-solid fa-door-open me-2"></i>Enter <%= c.name %> Workspace
                     </a>
 
-                    <div class="row g-2">
+                    <div class="row g-2 mt-1">
                       <div class="col-6">
-                        <a href="/teacher/tasks?classId=<%= c.id %>" class="btn btn-outline-indigo action-btn-pill w-100 text-center" style="border-color:#6366f1; color:#6366f1;">
+                        <a href="/teacher/activate-class/<%= c.id %>?goto=/teacher/tasks" class="btn btn-outline-indigo action-btn-pill w-100 text-center" style="border-color:#6366f1; color:#6366f1;">
                           <i class="fa-solid fa-list-check me-1"></i>Tasks
                         </a>
                       </div>
                       <div class="col-6">
-                        <a href="/teacher/marks?classId=<%= c.id %>" class="btn btn-outline-success action-btn-pill w-100 text-center">
+                        <a href="/teacher/activate-class/<%= c.id %>?goto=/teacher/marks" class="btn btn-outline-success action-btn-pill w-100 text-center">
                           <i class="fa-solid fa-file-signature me-1"></i>Marks
                         </a>
                       </div>
                     </div>
 
-                    <a href="/teacher/students?classId=<%= c.id %>" class="btn btn-light action-btn-pill text-secondary text-center mt-1">
+                    <a href="/teacher/activate-class/<%= c.id %>?goto=/teacher/students" class="btn btn-light action-btn-pill text-secondary text-center mt-1">
                       <i class="fa-solid fa-users me-1"></i>View Students List
                     </a>
                   </div>

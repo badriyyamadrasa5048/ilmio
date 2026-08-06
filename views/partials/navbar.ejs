@@ -15,6 +15,13 @@
   </div>
 
   <div class="navbar-actions">
+    <% if (user && user.userRole === 'teacher') { %>
+      <a href="/teacher/select-class" class="badge bg-warning text-dark px-3 py-2 text-decoration-none rounded-pill fw-bold me-2 shadow-xs" title="Click to switch class">
+        <i class="fa-solid fa-school me-1"></i>
+        Class: <%= (user.selectedClassName) ? user.selectedClassName : 'Select Class' %>
+        <i class="fa-solid fa-arrows-rotate ms-1 opacity-75"></i>
+      </a>
+    <% } %>
     <span class="d-none d-lg-flex align-items-center gap-2 me-2" style="font-size:13px;color:var(--text-muted);font-weight:500;">
       <i class="fa-regular fa-calendar"></i>
       <%= today %>

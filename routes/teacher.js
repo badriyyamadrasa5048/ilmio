@@ -8,7 +8,7 @@ const { Op } = require('sequelize');
 router.use(isAuthenticated, hasRole('teacher'));
 
 // ==========================================
-// 0. DEDICATED CLASS SELECTION PAGE
+// 0. DEDICATED CLASS SELECTION & ACTIVATION
 // ==========================================
 router.get('/select-class', async (req, res) => {
   const teacherId = req.session.referenceId;
@@ -26,11 +26,29 @@ router.get('/select-class', async (req, res) => {
       user: req.session,
       activePage: 'select-class',
       teacher,
-      classes
+      classes,
+      notice: req.query.notice || null
     });
   } catch (error) {
     console.error('Teacher select class error:', error);
     res.status(500).send('Internal Server Error');
+  }
+});
+
+// Activate specific class workspace in session
+router.get('/activate-class/:classId', async (req, res) => {
+  const classId = parseInt(req.params.classId, 10);
+  try {
+    const targetClass = await Class.findByPk(classId);
+    if (targetClass) {
+      req.session.selectedClassId = targetClass.id;
+      req.session.selectedClassName = targetClass.name;
+    }
+    const goto = req.query.goto || '/teacher/attendance';
+    res.redirect(`${goto}?classId=${classId}`);
+  } catch (err) {
+    console.error('Activate class error:', err);
+    res.redirect('/teacher/select-class');
   }
 });
 
@@ -115,10 +133,20 @@ router.get('/attendance', async (req, res) => {
       classes = await Class.findAll({ order: [['level', 'ASC']] });
     }
 
-    // Auto-select the first class if none selected
-    let activeClassId = classId;
+    // Active Class Resolution & Lock Gate
+    let activeClassId = classId || req.session.selectedClassId;
     if (!activeClassId && classes.length > 0) {
       activeClassId = classes[0].id;
+    }
+
+    if (!activeClassId) {
+      return res.redirect('/teacher/select-class?notice=Please+select+a+class+workspace+to+continue');
+    }
+
+    const targetClass = await Class.findByPk(activeClassId);
+    if (targetClass) {
+      req.session.selectedClassId = targetClass.id;
+      req.session.selectedClassName = targetClass.name;
     }
 
     let students = [];
