@@ -13,14 +13,13 @@ router.use(isAuthenticated, hasRole('teacher'));
 router.get('/select-class', async (req, res) => {
   const teacherId = req.session.referenceId;
   try {
-    const teacher = await Teacher.findByPk(teacherId, {
-      include: [{ model: Class, as: 'classes' }]
+    // Fetch ONLY classes assigned to this specific teacher
+    const classes = await Class.findAll({
+      where: { teacherId },
+      order: [['level', 'ASC']]
     });
 
-    let classes = (teacher && teacher.classes) ? teacher.classes : [];
-    if (classes.length === 0) {
-      classes = await Class.findAll({ order: [['level', 'ASC']] });
-    }
+    const teacher = await Teacher.findByPk(teacherId);
 
     res.render('teacher/select-class', {
       user: req.session,
@@ -52,10 +51,30 @@ router.get('/activate-class/:classId', async (req, res) => {
   }
 });
 
+// Middleware: Strict Class Selection Guard (No other pages load until class is selected)
+async function ensureTeacherClassSelected(req, res, next) {
+  const { classId } = req.query;
+
+  if (classId) {
+    const targetClass = await Class.findByPk(classId);
+    if (targetClass) {
+      req.session.selectedClassId = targetClass.id;
+      req.session.selectedClassName = targetClass.name;
+      return next();
+    }
+  }
+
+  if (req.session.selectedClassId) {
+    return next();
+  }
+
+  return res.redirect('/teacher/select-class?notice=Please+select+one+of+your+assigned+classes+to+continue');
+}
+
 // ==========================================
 // 1. VIEW ASSIGNED STUDENTS
 // ==========================================
-router.get('/students', async (req, res) => {
+router.get('/students', ensureTeacherClassSelected, async (req, res) => {
   const teacherId = req.session.referenceId;
   try {
     // Find all classes assigned to this teacher
@@ -119,7 +138,7 @@ function calculateStatus(checkInTime, startTime, endTime, graceTime) {
   }
 }
 
-router.get('/attendance', async (req, res) => {
+router.get('/attendance', ensureTeacherClassSelected, async (req, res) => {
   const teacherId = req.session.referenceId;
   const { classId, date } = req.query;
 
@@ -312,7 +331,7 @@ router.post('/attendance/save-single', async (req, res) => {
 // ==========================================
 
 // Get marks sheet
-router.get('/marks', async (req, res) => {
+router.get('/marks', ensureTeacherClassSelected, async (req, res) => {
   const teacherId = req.session.referenceId;
   const { classId, subjectName, examType, examDate } = req.query;
   const today = new Date().toISOString().split('T')[0];
@@ -431,7 +450,7 @@ router.post('/marks', async (req, res) => {
 // ==========================================
 // 4. TASK MANAGEMENT (TEACHER)
 // ==========================================
-router.get('/tasks', async (req, res) => {
+router.get('/tasks', ensureTeacherClassSelected, async (req, res) => {
   const teacherId = req.session.referenceId;
   const { classId, date, tab } = req.query;
 

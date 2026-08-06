@@ -92,33 +92,39 @@
         </a>
       </li>
 
-      <li class="nav-item <%= p === 'my-students' ? 'active' : '' %>">
-        <a href="/teacher/students" class="nav-link">
-          <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
-          My Students
-        </a>
-      </li>
+      <% if (user.selectedClassId) { %>
+        <li class="nav-item <%= p === 'my-students' ? 'active' : '' %>">
+          <a href="/teacher/students?classId=<%= user.selectedClassId %>" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+            My Students
+          </a>
+        </li>
 
-      <li class="nav-item <%= p === 'attendance' ? 'active' : '' %>">
-        <a href="/teacher/attendance" class="nav-link">
-          <span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span>
-          Mark Attendance
-        </a>
-      </li>
+        <li class="nav-item <%= p === 'attendance' ? 'active' : '' %>">
+          <a href="/teacher/attendance?classId=<%= user.selectedClassId %>" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span>
+            Mark Attendance
+          </a>
+        </li>
 
-      <li class="nav-item <%= p === 'marks' ? 'active' : '' %>">
-        <a href="/teacher/marks" class="nav-link">
-          <span class="nav-icon"><i class="fa-solid fa-file-signature"></i></span>
-          Enter Marks
-        </a>
-      </li>
+        <li class="nav-item <%= p === 'marks' ? 'active' : '' %>">
+          <a href="/teacher/marks?classId=<%= user.selectedClassId %>" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-file-signature"></i></span>
+            Enter Marks
+          </a>
+        </li>
 
-      <li class="nav-item <%= p === 'tasks' ? 'active' : '' %>">
-        <a href="/teacher/tasks" class="nav-link">
-          <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
-          Assigned Tasks
-        </a>
-      </li>
+        <li class="nav-item <%= p === 'tasks' ? 'active' : '' %>">
+          <a href="/teacher/tasks?classId=<%= user.selectedClassId %>" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+            Assigned Tasks
+          </a>
+        </li>
+      <% } else { %>
+        <li class="nav-item text-muted px-3 py-2 small opacity-75">
+          <i class="fa-solid fa-lock me-1"></i> Select a class above to unlock features.
+        </li>
+      <% } %>
 
     <% } else if (role === 'parent') { %>
 
