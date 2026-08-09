@@ -55,11 +55,14 @@ router.get('/teachers', async (req, res) => {
 router.post('/teachers/create', async (req, res) => {
   const { name, phone, password } = req.body;
   const t = await sequelize.transaction();
-  try {
-    if (!phone || !phone.trim()) {
-      const teachers = await Teacher.findAll({ include: [{ model: User, as: 'userAccount' }], order: [['name', 'ASC']] });
+  try {    if (!name || !name.trim()) {
       await t.rollback();
-      return res.render('admin/teachers', { user: req.session, teachers, search: '', error: 'Phone number is required for teacher login.', success: null });
+      return res.redirect('/admin/teachers?error=Teacher+Name+is+required');
+    }
+
+    if (!phone || !phone.trim()) {
+      await t.rollback();
+      return res.redirect('/admin/teachers?error=Phone+number+is+required+for+teacher+login');
     }
 
     const cleanPhone = phone.trim();
@@ -67,9 +70,8 @@ router.post('/teachers/create', async (req, res) => {
     // Check if phone already registered
     const existingTeacher = await Teacher.findOne({ where: { phone: cleanPhone } });
     if (existingTeacher) {
-      const teachers = await Teacher.findAll({ include: [{ model: User, as: 'userAccount' }], order: [['name', 'ASC']] });
       await t.rollback();
-      return res.render('admin/teachers', { user: req.session, teachers, search: '', error: 'A teacher with this phone number already exists.', success: null });
+      return res.redirect('/admin/teachers?error=A+teacher+with+this+phone+number+already+exists');
     }
 
     const teacher = await Teacher.create({ name, phone: cleanPhone }, { transaction: t });
@@ -87,19 +89,11 @@ router.post('/teachers/create', async (req, res) => {
 
     await t.commit();
     
-    const teachers = await Teacher.findAll({ include: [{ model: User, as: 'userAccount' }], order: [['name', 'ASC']] });
-    res.render('admin/teachers', { 
-      user: req.session, 
-      teachers, 
-      search: '', 
-      error: null, 
-      success: `Teacher added successfully! Login Phone: "${cleanPhone}", Password: "${finalPassword}"` 
-    });
+    res.redirect(`/admin/teachers?success=Teacher+added+successfully!+Login+Phone:+"${cleanPhone}",+Password:+"${finalPassword}"`);
   } catch (error) {
     await t.rollback();
     console.error('Error creating teacher:', error);
-    const teachers = await Teacher.findAll({ include: [{ model: User, as: 'userAccount' }], order: [['name', 'ASC']] });
-    res.render('admin/teachers', { user: req.session, teachers, search: '', error: 'Failed to add teacher.', success: null });
+    res.redirect('/admin/teachers?error=Failed+to+add+teacher');
   }
 });
 
@@ -262,16 +256,7 @@ router.post('/students/create', upload.single('photo'), async (req, res) => {
   try {
     if (!name || !name.trim()) {
       await t.rollback();
-      const students = await Student.findAll({ include: [{ model: Class, as: 'class' }] });
-      return res.render('admin/students', {
-        user: req.session,
-        students,
-        classes,
-        search: '',
-        selectedClassId: '',
-        error: 'Student Name is mandatory.',
-        success: null
-      });
+      return res.redirect('/admin/students?error=Student+Name+is+mandatory');
     }
 
     let finalAdmissionNo = admissionNumber ? admissionNumber.trim() : '';
@@ -281,17 +266,8 @@ router.post('/students/create', upload.single('photo'), async (req, res) => {
     } else {
       const existing = await Student.findOne({ where: { admissionNumber: finalAdmissionNo } });
       if (existing) {
-        const students = await Student.findAll({ include: [{ model: Class, as: 'class' }] });
         await t.rollback();
-        return res.render('admin/students', {
-          user: req.session,
-          students,
-          classes,
-          search: '',
-          selectedClassId: '',
-          error: 'Admission number already exists.',
-          success: null
-        });
+        return res.redirect('/admin/students?error=Admission+number+already+exists');
       }
     }
 
@@ -321,29 +297,12 @@ router.post('/students/create', upload.single('photo'), async (req, res) => {
 
     await t.commit();
 
-    const students = await Student.findAll({ include: [{ model: Class, as: 'class' }], order: [['name', 'ASC']] });
-    res.render('admin/students', {
-      user: req.session,
-      students,
-      classes,
-      search: '',
-      selectedClassId: '',
-      error: null,
-      success: `Student added successfully! Parent Login -> ID: "${parentUsername}", Password: "${parentPassword}"`
-    });
+    res.redirect(`/admin/students?success=Student+added+successfully!+Parent+Login+->+ID:+"${parentUsername}",+Password:+"${parentPassword}"`);
   } catch (error) {
     await t.rollback();
     console.error('Error creating student:', error);
-    const students = await Student.findAll({ include: [{ model: Class, as: 'class' }], order: [['name', 'ASC']] });
-    res.render('admin/students', {
-      user: req.session,
-      students,
-      classes,
-      search: '',
-      selectedClassId: '',
-      error: 'Failed to add student.',
-      success: null
-    });
+    res.redirect('/admin/students?error=Failed+to+add+student');
+  }
   }
 });
 
