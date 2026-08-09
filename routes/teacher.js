@@ -567,6 +567,9 @@ router.get('/tasks', ensureTeacherClassSelected, async (req, res) => {
       parentCompletions,
       selectedDate,
       activeTab,
+      createdTasks,
+      success: req.query.success || null,
+      error: req.query.error || null
     });
   } catch (error) {
     console.error('Teacher fetch tasks error:', error);
