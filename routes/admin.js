@@ -303,7 +303,6 @@ router.post('/students/create', upload.single('photo'), async (req, res) => {
     console.error('Error creating student:', error);
     res.redirect('/admin/students?error=Failed+to+add+student');
   }
-  }
 });
 
 // Update student
