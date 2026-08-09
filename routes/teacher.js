@@ -567,13 +567,53 @@ router.get('/tasks', ensureTeacherClassSelected, async (req, res) => {
       parentCompletions,
       selectedDate,
       activeTab,
-      createdTasks,
-      success: req.query.success || null,
-      error: req.query.error || null
     });
   } catch (error) {
     console.error('Teacher fetch tasks error:', error);
     res.status(500).send('Internal Server Error');
+  }
+});
+
+// Teacher Save single student task completion state via AJAX
+router.post('/tasks/save-single', async (req, res) => {
+  const { date, studentId, taskId, completed, percentage } = req.body;
+  const isCompleted = completed === 'true' || completed === true;
+
+  try {
+    const task = await Task.findByPk(taskId);
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    const completionDate = task.type === 'daily' ? (date || new Date().toISOString().split('T')[0]) : null;
+    const percentVal = percentage !== undefined && percentage !== null && percentage !== '' ? parseInt(percentage, 10) : null;
+
+    let completion = await TaskCompletion.findOne({
+      where: {
+        taskId: task.id,
+        studentId: parseInt(studentId, 10),
+        date: completionDate
+      }
+    });
+
+    if (completion) {
+      completion.completed = isCompleted;
+      completion.percentage = percentVal;
+      await completion.save();
+    } else {
+      completion = await TaskCompletion.create({
+        taskId: task.id,
+        studentId: parseInt(studentId, 10),
+        date: completionDate,
+        completed: isCompleted,
+        percentage: percentVal
+      });
+    }
+
+    res.json({ success: true, completed: completion.completed, percentage: completion.percentage });
+  } catch (error) {
+    console.error('Teacher save single task error:', error);
+    res.status(500).json({ error: 'Failed to save task completion' });
   }
 });
 
